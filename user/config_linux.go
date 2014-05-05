@@ -15,7 +15,7 @@ import (
 	"sync"
 
 	"github.com/kless/os/user/crypt"
-	"github.com/kless/shutil/shconf"
+	"github.com/kless/os/config/shconf"
 )
 
 // TODO: handle des, bcrypt and rounds in SHA2.
