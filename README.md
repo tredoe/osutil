@@ -1,6 +1,8 @@
 os
 ==
-<< PROJECT SYNOPSIS >>
+Access to operating system functionality dependent of every platform.
+
++ os: provides access to UNIX users database in local files
 
 [Documentation online](http://godoc.org/github.com/kless/os)
 
