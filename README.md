@@ -4,6 +4,7 @@ Access to operating system functionality dependent of every platform.
 
 + config/env: set persistent environment variables
 + config/shconf: parser and scanner for the configuration in format shell-variable
++ distro: detects the Linux distribution
 + user: provides access to UNIX users database in local files
 + user/crypt: password hashing used in UNIX
 
