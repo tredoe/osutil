@@ -14,7 +14,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kless/crypt"
+	"github.com/kless/os/user/crypt"
 	"github.com/kless/shutil/shconf"
 )
 

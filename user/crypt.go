@@ -23,11 +23,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/kless/crypt"
-	_ "github.com/kless/crypt/md5_crypt"
-	_ "github.com/kless/crypt/sha256_crypt"
-	_ "github.com/kless/crypt/sha512_crypt"
-	//_ "github.com/kless/crypt/bcrypt"
+	"github.com/kless/os/user/crypt"
+	_ "github.com/kless/os/user/crypt/md5_crypt"
+	_ "github.com/kless/os/user/crypt/sha256_crypt"
+	_ "github.com/kless/os/user/crypt/sha512_crypt"
+	//_ "github.com/kless/os/user/crypt/bcrypt"
 )
 
 const _LOCK_CHAR = '!' // Character added at the beginning of the passwd to lock it.
@@ -67,7 +67,7 @@ func lookupCrypter() (crypt.Crypter, error) {
 }
 
 // SetCrypter sets the crypt function to can hash the passwords.
-// The type "crypt.Crypt" comes from package "github.com/kless/crypt".
+// The type "crypt.Crypt" comes from package "github.com/kless/os/user/crypt".
 func SetCrypter(c crypt.Crypt) {
 	loadConfig()
 	config.crypter = crypt.New(c)
