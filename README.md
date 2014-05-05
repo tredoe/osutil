@@ -12,13 +12,7 @@ utility packages for the Shell.
 + user: provides access to UNIX users database in local files
 + user/crypt: password hashing used in UNIX
 
-+ exp: experimental code, unfinished
-
 [Documentation online](http://godoc.org/github.com/kless/os)
-
-## Installation
-
-	go get github.com/kless/os
 
 ## License
 
