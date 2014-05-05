@@ -3,6 +3,7 @@ os
 Access to operating system functionality dependent of every platform.
 
 + os: provides access to UNIX users database in local files
++ os/crypt: password hashing used in UNIX
 
 [Documentation online](http://godoc.org/github.com/kless/os)
 
