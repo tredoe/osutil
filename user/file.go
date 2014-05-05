@@ -13,7 +13,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/kless/shutil/file"
+	"github.com/kless/osutil/file"
 )
 
 // A dbfile represents the database file.

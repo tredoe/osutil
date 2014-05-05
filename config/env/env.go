@@ -17,9 +17,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/kless/os/config/shconf"
-	"github.com/kless/os/user"
-	"github.com/kless/shutil/file"
+	"github.com/kless/osutil/config/shconf"
+	"github.com/kless/osutil/user"
+	"github.com/kless/osutil/file"
 )
 
 var _IS_ROOT bool

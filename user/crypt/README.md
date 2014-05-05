@@ -17,7 +17,7 @@ Note: forked from <https://github.com/jeramey/go-pwhash>
 
 ## Installation
 
-	go get github.com/kless/os/user/crypt
+	go get github.com/kless/osutil/user/crypt
 
 ## License
 

@@ -1,5 +1,5 @@
-os
-==
+osutil
+======
 Access to operating system functionality dependent of every platform and
 utility packages for the Shell.
 
@@ -12,7 +12,7 @@ utility packages for the Shell.
 + user: provides access to UNIX users database in local files
 + user/crypt: password hashing used in UNIX
 
-[Documentation online](http://godoc.org/github.com/kless/os)
+[Documentation online](http://godoc.org/github.com/kless/osutil)
 
 ## License
 

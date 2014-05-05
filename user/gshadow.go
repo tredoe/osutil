@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/kless/shutil/file"
+	"github.com/kless/osutil/file"
 )
 
 type gshadowField int

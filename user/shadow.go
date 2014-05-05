@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kless/shutil/file"
+	"github.com/kless/osutil/file"
 )
 
 type shadowField int
