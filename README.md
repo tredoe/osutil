@@ -9,6 +9,8 @@ Access to operating system functionality dependent of every platform.
 + user: provides access to UNIX users database in local files
 + user/crypt: password hashing used in UNIX
 
++ exp: experimental code, unfinished
+
 [Documentation online](http://godoc.org/github.com/kless/os)
 
 ## Installation
