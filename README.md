@@ -1,12 +1,14 @@
 os
 ==
-Access to operating system functionality dependent of every platform.
+Access to operating system functionality dependent of every platform and
+utility packages for the Shell.
 
 + config/env: set persistent environment variables
 + config/shconf: parser and scanner for the configuration in format shell-variable
 + distro: detects the Linux distribution
 + file: common operations in files
 + pkg: basic operations for the management of packages in operating systems
++ sh: interprets a command line like it is done in the Bash shell
 + user: provides access to UNIX users database in local files
 + user/crypt: password hashing used in UNIX
 
@@ -17,10 +19,6 @@ Access to operating system functionality dependent of every platform.
 ## Installation
 
 	go get github.com/kless/os
-
-## TODO
-
-Check the error code returned at testing package "pkg".
 
 ## License
 
