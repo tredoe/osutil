@@ -24,6 +24,7 @@ func Exec(cmd string, args ...string) error {
 	return nil
 }
 
+// ExecSudo executes a command under "sudo".
 func ExecSudo(cmd string, args ...string) error {
 	return Exec("sudo", append([]string{cmd}, args...)...)
 }
