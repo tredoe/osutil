@@ -6,35 +6,42 @@
 
 package pkg
 
+import "github.com/kless/osutil"
+
 type rpm packageSystem
 
 func (p rpm) Install(name ...string) error {
-	if p.isFirstInstall {
-		if err := run("/usr/bin/yum", "update"); err != nil {
-			return err
-		}
-		p.isFirstInstall = false
-	}
+	args := []string{"install"}
 
-	arg := []string{"install"}
-	arg = append(arg, name...)
-	return run("/usr/bin/yum", arg...)
+	return osutil.Exec("/usr/bin/yum", append(args, name...)...)
 }
 
-func (rpm) Remove(isMetapackage bool, name ...string) error {
-	arg := []string{"remove"}
-	arg = append(arg, name...)
-	return run("/usr/bin/yum", arg...)
+func (p rpm) Remove(name ...string) error {
+	args := []string{"remove"}
+
+	return osutil.Exec("/usr/bin/yum", append(args, name...)...)
 }
 
-func (rpm) Purge(isMetapackage bool, name ...string) error {
-	return nil
+func (p rpm) RemoveMeta(name ...string) error {
+	return p.Remove(name...)
 }
 
-func (rpm) Clean() error {
-	return run("/usr/bin/yum", "clean", "packages")
+func (p rpm) Purge(name ...string) error {
+	return p.Remove(name...)
 }
 
-func (rpm) Upgrade() error {
-	return run("/usr/bin/yum", "update")
+func (p rpm) PurgeMeta(name ...string) error {
+	return p.RemoveMeta(name...)
+}
+
+func (p rpm) Update() error {
+	return osutil.Exec("/usr/bin/yum", "update")
+}
+
+func (p rpm) Upgrade() error {
+	return osutil.Exec("/usr/bin/yum", "update")
+}
+
+func (p rpm) Clean() error {
+	return osutil.Exec("/usr/bin/yum", "clean", "packages")
 }

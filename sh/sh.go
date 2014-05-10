@@ -54,13 +54,6 @@ func (e runError) Error() string {
 	return fmt.Sprintf("\n%s", e.err)
 }
 
-// Run executes external commands just like RunWithMatch, but does not return
-// the boolean `match`.
-func Run(command string) (output []byte, err error) {
-	output, _, err = RunWithMatch(command)
-	return
-}
-
 // RunWithMatch executes external commands with access to shell features such as
 // filename wildcards, shell pipes, environment variables, and expansion of the
 // shortcut character "~" to home directory.
@@ -292,6 +285,13 @@ func RunWithMatch(command string) (output []byte, match bool, err error) {
 	return stdout.Bytes(), match, nil
 }
 
+// Run executes external commands just like RunWithMatch, but does not return
+// the boolean `match`.
+func Run(command string) (output []byte, err error) {
+	output, _, err = RunWithMatch(command)
+	return
+}
+
 // Runf is like Run, but formats its arguments according to the format.
 // Analogous to Printf().
 func Runf(format string, args ...interface{}) ([]byte, error) {
@@ -304,10 +304,11 @@ func RunWithMatchf(format string, args ...interface{}) ([]byte, bool, error) {
 	return RunWithMatch(fmt.Sprintf(format, args...))
 }
 
-// Sudo calls to command sudo.
-// If anything command needs to use sudo, then could be used this function at
+// Sudo executes command "sudo".
+// If some command needs to use "sudo", then could be used this function at
 // the beginning so there is not to wait until that it been requested later.
-func Sudo() {
-	out, _ := Run("sudo /bin/true")
-	println("out:", out)
+func Sudo() (err error) {
+	_, err = Run("sudo /bin/true")
+	return
+	//fmt.Println("out:", out)
 }

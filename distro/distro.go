@@ -30,7 +30,7 @@ const (
 	Ubuntu
 )
 
-var distroNames = []string{
+var distroNames = [...]string{
 	Arch:      "Arch", // Manjaro
 	CentOS:    "CentOS",
 	Debian:    "Debian",

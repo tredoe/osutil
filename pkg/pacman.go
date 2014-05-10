@@ -6,49 +6,54 @@
 
 package pkg
 
+import "github.com/kless/osutil"
+
 type pacman packageSystem
 
 func (p pacman) Install(name ...string) error {
-	if p.isFirstInstall {
-		p.isFirstInstall = false
-		arg := []string{"-Syu", "--needed", "--noprogressbar"}
-		arg = append(arg, name...)
-		return run("/usr/bin/pacman", arg...)
-	}
+	args := []string{"-S", "--needed", "--noprogressbar"}
 
-	arg := []string{"-S", "--needed", "--noprogressbar"}
-	arg = append(arg, name...)
-	return run("/usr/bin/pacman", arg...)
+	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
 }
 
-func (pacman) Remove(isMetapackage bool, name ...string) error {
-	if isMetapackage {
-		arg := []string{"-Rs"}
-		arg = append(arg, name...)
-		return run("/usr/bin/pacman", arg...)
-	}
+func (p pacman) Remove(name ...string) error {
+	args := []string{"-R"}
 
-	arg := []string{"-R"}
-	arg = append(arg, name...)
-	return run("/usr/bin/pacman", arg...)
+	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
 }
 
-func (pacman) Purge(isMetapackage bool, name ...string) error {
-	if isMetapackage {
-		arg := []string{"-Rsn"}
-		arg = append(arg, name...)
-		return run("/usr/bin/pacman", arg...)
-	}
+func (p pacman) RemoveMeta(name ...string) error {
+	args := []string{"-Rs"}
 
-	arg := []string{"-Rn"}
-	arg = append(arg, name...)
-	return run("/usr/bin/pacman", arg...)
+	if err := osutil.Exec("/usr/bin/pacman", append(args, name...)...);err != nil {
+		return err
+	}
+	return p.Remove(name...)
 }
 
-func (pacman) Clean() error {
+func (p pacman) Purge(name ...string) error {
+	args := []string{"-Rn"}
+
+	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
+}
+
+func (p pacman) PurgeMeta(name ...string) error {
+	args := []string{"-Rsn"}
+
+	if err := osutil.Exec("/usr/bin/pacman", append(args, name...)...); err != nil {
+		return err
+	}
+	return p.Purge(name...)
+}
+
+func (p pacman) Update() error {
+	return osutil.Exec("/usr/bin/pacman", "-Syu", "--needed", "--noprogressbar")
+}
+
+func (p pacman) Upgrade() error {
+	return osutil.Exec("/usr/bin/pacman", "-Syu")
+}
+
+func (p pacman) Clean() error {
 	return nil
-}
-
-func (pacman) Upgrade() error {
-	return run("/usr/bin/pacman", "-Syu")
 }

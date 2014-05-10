@@ -9,15 +9,28 @@ package pkg
 import "testing"
 
 func TestPackager(t *testing.T) {
-	sys := New(Deb)
+	pkg, err := Detect()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	cmd := "curl"
 
-	err := sys.Install(cmd)
-	if err != nil {
+	if err = pkg.Update(); err != nil {
+		t.Fatal(err)
+	}
+	if err = pkg.Upgrade(); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = pkg.Install(cmd); err != nil {
+		t.Errorf("\n%s", err)
+	}
+	if err = pkg.Remove(cmd); err != nil {
 		t.Errorf("\n%s", err)
 	}
 
-	if err = sys.Remove(false, cmd); err != nil {
+	if err = pkg.Clean(); err != nil {
 		t.Errorf("\n%s", err)
 	}
 }

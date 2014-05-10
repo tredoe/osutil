@@ -52,7 +52,7 @@ type Crypter interface {
 type Crypt uint
 
 const (
-	APR1   Crypt = 1 + iota // import "github.com/kless/osutil/user/crypt/apr1_crypt"
+	APR1   Crypt = iota + 1 // import "github.com/kless/osutil/user/crypt/apr1_crypt"
 	MD5                     // import "github.com/kless/osutil/user/crypt/md5_crypt"
 	SHA256                  // import "github.com/kless/osutil/user/crypt/sha256_crypt"
 	SHA512                  // import "github.com/kless/osutil/user/crypt/sha512_crypt"

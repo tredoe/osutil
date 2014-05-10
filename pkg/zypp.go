@@ -6,38 +6,44 @@
 
 package pkg
 
+import "github.com/kless/osutil"
+
 type zypp packageSystem
 
 func (p zypp) Install(name ...string) error {
-	if p.isFirstInstall {
-		if err := run("/usr/bin/zypper", "refresh"); err != nil {
-			return err
-		}
-		p.isFirstInstall = false
-	}
+	args := []string{"install", "--auto-agree-with-licenses"}
 
-	arg := []string{"install", "--auto-agree-with-licenses"}
-	arg = append(arg, name...)
-	return run("/usr/bin/zypper", arg...)
+	return osutil.Exec("/usr/bin/zypper", append(args, name...)...)
 }
 
-func (zypp) Remove(isMetapackage bool, name ...string) error {
-	arg := []string{"remove"}
-	arg = append(arg, name...)
-	return run("/usr/bin/zypper", arg...)
+func (p zypp) Remove(name ...string) error {
+	args := []string{"remove"}
+
+	return osutil.Exec("/usr/bin/zypper", append(args, name...)...)
 }
 
-func (zypp) Purge(isMetapackage bool, name ...string) error {
-	return nil
+func (p zypp) RemoveMeta(name ...string) error {
+	args := []string{"remove"}
+
+	return osutil.Exec("/usr/bin/zypper", append(args, name...)...)
 }
 
-func (zypp) Clean() error {
-	return run("/usr/bin/zypper", "clean")
+func (p zypp) Purge(name ...string) error {
+	return p.Remove(name...)
 }
 
-func (zypp) Upgrade() error {
-	if err := run("/usr/bin/zypper", "refresh"); err != nil {
-		return err
-	}
-	return run("/usr/bin/zypper", "up", "--auto-agree-with-licenses")
+func (p zypp) PurgeMeta(name ...string) error {
+	return p.RemoveMeta(name...)
+}
+
+func (p zypp) Update() error {
+	return osutil.Exec("/usr/bin/zypper", "refresh")
+}
+
+func (p zypp) Upgrade() error {
+	return osutil.Exec("/usr/bin/zypper", "up", "--auto-agree-with-licenses")
+}
+
+func (p zypp) Clean() error {
+	return osutil.Exec("/usr/bin/zypper", "clean")
 }

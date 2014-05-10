@@ -6,54 +6,50 @@
 
 package pkg
 
+import "github.com/kless/osutil"
+
 type deb packageSystem
 
 func (p deb) Install(name ...string) error {
-	if p.isFirstInstall {
-		if err := run("/usr/bin/apt-get", "update"); err != nil {
-			return err
-		}
-		p.isFirstInstall = false
-	}
+	args := []string{"install", "-y"}
 
-	arg := []string{"install", "-y"}
-	arg = append(arg, name...)
-	return run("/usr/bin/apt-get", arg...)
+	return osutil.ExecSudo("/usr/bin/apt-get", append(args, name...)...)
 }
 
-func (deb) Remove(isMetapackage bool, name ...string) error {
-	arg := []string{"remove", "-y"}
-	arg = append(arg, name...)
-	if err := run("/usr/bin/apt-get", arg...); err != nil {
+func (p deb) Remove(name ...string) error {
+	args := []string{"remove", "-y"}
+
+	return osutil.ExecSudo("/usr/bin/apt-get", append(args, name...)...)
+}
+
+func (p deb) RemoveMeta(name ...string) error {
+	if err := p.Remove(name...); err != nil {
 		return err
 	}
-
-	if isMetapackage {
-		return run("/usr/bin/apt-get", "autoremove", "-y")
-	}
-	return nil
+	return osutil.ExecSudo("/usr/bin/apt-get", "autoremove", "-y")
 }
 
-func (deb) Purge(isMetapackage bool, name ...string) error {
-	arg := []string{"purge", "-y"}
-	arg = append(arg, name...)
-	if err := run("/usr/bin/apt-get", arg...); err != nil {
+func (p deb) Purge(name ...string) error {
+	args := []string{"purge", "-y"}
+
+	return osutil.ExecSudo("/usr/bin/apt-get", append(args, name...)...)
+}
+
+func (p deb) PurgeMeta(name ...string) error {
+	if err := p.Purge(name...); err != nil {
 		return err
 	}
-
-	if isMetapackage {
-		return run("/usr/bin/apt-get", "autoremove", "--purge", "-y")
-	}
-	return nil
+	return osutil.ExecSudo("/usr/bin/apt-get", "autoremove", "--purge", "-y")
 }
 
-func (deb) Clean() error {
-	return run("/usr/bin/apt-get", "clean")
+func (p deb) Update() error {
+	return osutil.ExecSudo("/usr/bin/apt-get", "update")
 }
 
-func (deb) Upgrade() error {
-	if err := run("/usr/bin/apt-get", "update"); err != nil {
-		return err
-	}
-	return run("/usr/bin/apt-get", "upgrade")
+func (p deb) Upgrade() error {
+	return osutil.ExecSudo("/usr/bin/apt-get", "upgrade")
+}
+
+func (p deb) Clean() error {
+	return osutil.ExecSudo("/usr/bin/apt-get", "clean")
 }

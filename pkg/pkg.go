@@ -21,38 +21,64 @@ package pkg
 
 import (
 	"errors"
+	"log"
 	"os/exec"
 )
 
+// Packager is the common interface to handle different package systems.
 type Packager interface {
-	// Install installs a paquete.
-	Install(...string) error
+	// Install installs a package.
+	Install(name ...string) error
 
-	// Remove removes a paquete.
-	Remove(bool, ...string) error
+	// Remove removes a package.
+	Remove(name ...string) error
 
-	// Purge removes a paquete and its config files.
-	Purge(bool, ...string) error
+	// RemoveMeta removes a meta-package.
+	RemoveMeta(name ...string) error
 
-	// Clean erases downloaded archive files.
-	Clean() error
+	// Purge removes a package and its configuration files.
+	Purge(name ...string) error
+
+	// PurgeMeta removes a meta-package and theirs configuration files.
+	PurgeMeta(name ...string) error
+
+	// Update resynchronizes the package index files from their sources.
+	Update() error
 
 	// Upgrade upgrades all the packages on the system.
 	Upgrade() error
-}
 
-// * * *
+	// Clean erases packages downloaded.
+	Clean() error
+}
 
 // PackageType represents a package management system.
 type PackageType int
 
 const (
+	// Linux
 	Deb PackageType = iota + 1
 	RPM
 	Pacman
 	Ebuild
 	ZYpp
 )
+
+func (pkg PackageType) String() string {
+	switch pkg {
+	case Deb:
+		return "Deb"
+	case RPM:
+		return "RPM"
+	case Pacman:
+		return "Pacman"
+	case Ebuild:
+		return "Ebuild"
+	case ZYpp:
+		return "ZYpp"
+	}
+	panic("unreachable")
+}
 
 // New returns the interface to handle the package manager.
 func New(p PackageType) Packager {
@@ -71,45 +97,32 @@ func New(p PackageType) Packager {
 	panic("unreachable")
 }
 
-// * * *
-
-type packagerInfo struct {
-	typ PackageType
-	pkg Packager
-}
-
 // execPackagers is a list of executables of package managers.
-var execPackagers = map[string]packagerInfo{
-	"apt-get": packagerInfo{Deb, new(deb)},
-	"yum":     packagerInfo{RPM, new(rpm)},
-	"pacman":  packagerInfo{Pacman, new(pacman)},
-	"emerge":  packagerInfo{Ebuild, new(ebuild)},
-	"zypper":  packagerInfo{ZYpp, new(zypp)},
+var execPackagers = [...]string{
+	Deb:    "apt-get",
+	RPM:    "yum",
+	Pacman: "pacman",
+	Ebuild: "emerge",
+	ZYpp:   "zypper",
 }
 
 // Detect tries to get the package manager used in the system, looking for
 // executables in directory "/usr/bin".
-func Detect() (PackageType, Packager, error) {
+func Detect() (Packager, error) {
 	for k, v := range execPackagers {
-		_, err := exec.LookPath("/usr/bin/" + k)
+		_, err := exec.LookPath("/usr/bin/" + v)
 		if err == nil {
-			return v.typ, v.pkg, nil
+			return New(PackageType(k)), nil
 		}
 	}
-	return 0, nil, errors.New("package manager not found in directory /usr/bin")
+	return nil, errors.New("package manager not found in directory '/usr/bin'")
 }
 
-// runc executes a command logging its output if there is not any error.
-func run(cmd string, arg ...string) error {
-	_, err := exec.Command(cmd, arg...).CombinedOutput()
-	if err != nil {
-		return err
-	}
+// * * *
 
-	// log.Print(string(out)) // DEBUG
-	return nil
-}
+type packageSystem byte
 
-type packageSystem struct {
-	isFirstInstall bool
+func init() {
+	log.SetFlags(0)
+	log.SetPrefix("[pkg] ")
 }

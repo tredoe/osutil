@@ -6,42 +6,43 @@
 
 package pkg
 
+import "github.com/kless/osutil"
+
 type ebuild packageSystem
 
 func (p ebuild) Install(name ...string) error {
-	if p.isFirstInstall {
-		if err := run("/usr/bin/emerge", "--sync"); err != nil {
-			return err
-		}
-		p.isFirstInstall = false
-	}
-	return run("/usr/bin/emerge", name...)
+	return osutil.Exec("/usr/bin/emerge", name...)
 }
 
-func (ebuild) Remove(isMetapackage bool, name ...string) error {
-	arg := []string{"--unmerge"}
-	arg = append(arg, name...)
-	if err := run("/usr/bin/emerge", arg...); err != nil {
+func (p ebuild) Remove(name ...string) error {
+	args := []string{"--unmerge"}
+
+	return osutil.Exec("/usr/bin/emerge", append(args, name...)...)
+}
+
+func (p ebuild) RemoveMeta(name ...string) error {
+	if err := p.Remove(name...); err != nil {
 		return err
 	}
-
-	if isMetapackage {
-		return run("/usr/bin/emerge", "--depclean")
-	}
-	return nil
+	return osutil.Exec("/usr/bin/emerge", "--depclean")
 }
 
-func (ebuild) Purge(isMetapackage bool, name ...string) error {
-	return nil
+func (p ebuild) Purge(name ...string) error {
+	return p.Remove(name...)
 }
 
-func (ebuild) Clean() error {
-	return nil
+func (p ebuild) PurgeMeta(name ...string) error {
+	return p.RemoveMeta(name...)
 }
 
-func (ebuild) Upgrade() error {
-	if err := run("/usr/bin/emerge", "--sync"); err != nil {
-		return err
-	}
-	return run("/usr/bin/emerge", "--update", "--deep", "--with-bdeps=y", "--newuse world")
+func (p ebuild) Update() error {
+	return osutil.Exec("/usr/bin/emerge", "--sync")
+}
+
+func (p ebuild) Upgrade() error {
+	return osutil.Exec("/usr/bin/emerge", "--update", "--deep", "--with-bdeps=y", "--newuse world")
+}
+
+func (p ebuild) Clean() error {
+	return nil
 }
