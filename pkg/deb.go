@@ -43,7 +43,7 @@ func (p deb) PurgeMeta(name ...string) error {
 }
 
 func (p deb) Update() error {
-	return osutil.ExecSudo("/usr/bin/apt-get", "update")
+	return osutil.ExecSudo("/usr/bin/apt-get", "update", "-qq")
 }
 
 func (p deb) Upgrade() error {

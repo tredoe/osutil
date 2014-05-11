@@ -28,3 +28,10 @@ func Exec(cmd string, args ...string) error {
 func ExecSudo(cmd string, args ...string) error {
 	return Exec("sudo", append([]string{cmd}, args...)...)
 }
+
+// Sudo executes command "sudo".
+// If some command needs to use "sudo", then could be used this function at
+// the beginning so there is not to wait until that it been requested later.
+func Sudo() error {
+	return Exec("sudo", "/bin/true")
+}

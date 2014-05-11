@@ -10,6 +10,8 @@ import (
 	"testing"
 )
 
-func Test(t *testing.T) {
-	
+func TestSudo(t *testing.T) {
+	if err := Sudo(); err != nil {
+		t.Error(err)
+	}
 }

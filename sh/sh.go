@@ -303,12 +303,3 @@ func Runf(format string, args ...interface{}) ([]byte, error) {
 func RunWithMatchf(format string, args ...interface{}) ([]byte, bool, error) {
 	return RunWithMatch(fmt.Sprintf(format, args...))
 }
-
-// Sudo executes command "sudo".
-// If some command needs to use "sudo", then could be used this function at
-// the beginning so there is not to wait until that it been requested later.
-func Sudo() (err error) {
-	_, err = Run("sudo /bin/true")
-	return
-	//fmt.Println("out:", out)
-}
