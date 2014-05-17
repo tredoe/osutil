@@ -7,6 +7,7 @@ utility packages for the Shell.
 + config/shconf: parser and scanner for the configuration in format shell-variable
 + distro: detects the Linux distribution
 + file: common operations in files
++ gake: Go Make
 + pkg: basic operations for the management of packages in operating systems
 + sh: interprets a command line like it is done in the Bash shell
 + user: provides access to UNIX users database in local files
