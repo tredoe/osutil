@@ -7,21 +7,41 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/kless/goutil"
 )
 
-func TestCommand(t *testing.T) {
-	CMD_MAIN := "test-gake"
+const CMD_MAIN = "test-gake"
 
-	// Build the command
+// Build the command
+func init() {
 	err := exec.Command("go", "build", "-o", CMD_MAIN).Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func TestCommand(t *testing.T) {
+	err := exec.Command("./"+CMD_MAIN, "testdata").Run()
 	if err != nil {
 		t.Fatal(err)
 	}
+}
 
-	err = exec.Command("./"+CMD_MAIN, "testdata").Run()
+func TestMultiPackages(t *testing.T) {
+	commandTests := []goutil.CommandTest{
+		{
+			Args:   "./testdata/multi_pkg/",
+			Stderr: `can't load package: found packages "main2" ('testdata/multi_pkg/test3_make.go', 'testdata/multi_pkg/test2_make.go'), "main" ('testdata/multi_pkg/test1_make.go') in './testdata/multi_pkg/'` + "\n",
+			//Out:  "",
+		},
+	}
+
+	err := goutil.TestingCmd(".", commandTests)
 	if err != nil {
 		t.Fatal(err)
 	}

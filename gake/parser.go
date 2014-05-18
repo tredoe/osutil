@@ -51,7 +51,7 @@ func ParseDir(path string) error {
 		fmt.Printf("  [no make files]\n")
 		return nil
 	} else if len(pkgs) > 1 {
-		return MulPkgError{path, pkgs}
+		return MultiPkgError{path, pkgs}
 	}
 
 	pkgName := ""
@@ -136,13 +136,13 @@ func (e FuncSignError) Error() string {
 	)
 }
 
-// MulPkgError represents a directory with multiple packages.
-type MulPkgError struct {
+// MultiPkgError represents an error due to multiple packages into a same directory.
+type MultiPkgError struct {
 	path string
 	pkgs map[string]*ast.Package
 }
 
-func (e MulPkgError) Error() string {
+func (e MultiPkgError) Error() string {
 	msg := make([]string, len(e.pkgs))
 	i := 0
 
