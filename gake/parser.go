@@ -144,10 +144,18 @@ type MulPkgError struct {
 
 func (e MulPkgError) Error() string {
 	msg := make([]string, len(e.pkgs))
-
 	i := 0
-	for name, _ := range e.pkgs {
-		msg[i] = fmt.Sprintf("%q", name)
+
+	for pkgName, pkg := range e.pkgs {
+		files := make([]string, len(pkg.Files))
+		j := 0
+
+		for fileName, _ := range pkg.Files {
+			files[j] = "'" + fileName + "'"
+			j++
+		}
+
+		msg[i] = fmt.Sprintf("%q (%s)", pkgName, strings.Join(files, ", "))
 		i++
 	}
 

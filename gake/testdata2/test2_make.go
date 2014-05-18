@@ -1,6 +1,6 @@
 // +build gake
 
-package main
+package main2
 
 import "github.com/kless/osutil/gake/making"
 
