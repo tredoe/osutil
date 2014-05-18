@@ -11,13 +11,16 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"path/filepath"
+	"os"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
 
-const PREFIX = "Make"
+const (
+	IMPORT_PATH = `"github.com/kless/osutil/gake/making"`
+	PREFIX      = "Make"
+)
 
 type funcDecl struct {
 	name string
@@ -30,57 +33,83 @@ type funcDecl struct {
 // not starting with a lower case letter) and should have the signature,
 //
 //	func MakeXXX(m *making.M) { ... }
-func Parser(dir string) error {
-	files, err := filepath.Glob(filepath.Join(dir, "*_make.go"))
-	if err != nil {
-		return err
-	}
-	if len(files) == 0 {
-		fmt.Printf("  [no make files]\n")
-		return nil
+func ParseDir(path string) error {
+	filter := func(info os.FileInfo) bool {
+		if strings.HasSuffix(info.Name(), "_make.go") {
+			return true
+		}
+		return false
 	}
 
 	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, files[0], nil, parser.ParseComments)
+
+	pkgs, err := parser.ParseDir(fset, path, filter, parser.ParseComments|parser.DeclarationErrors)
 	if err != nil {
 		return err
+	}
+	if len(pkgs) == 0 {
+		fmt.Printf("  [no make files]\n")
+		return nil
+	} else if len(pkgs) > 1 {
+		return MulPkgError{path, pkgs}
+	}
+
+	pkgName := ""
+	for k, _ := range pkgs {
+		pkgName = k
+		break
 	}
 
 	funcDecls := make([]funcDecl, 0)
 
-	for _, decl := range file.Decls {
-		f, ok := decl.(*ast.FuncDecl)
-		if !ok {
-			continue
+	for _, file := range pkgs[pkgName].Files {
+		// Check import path
+		hasImportPath := false
+		for _, v := range file.Imports {
+			if v.Path.Value == IMPORT_PATH {
+				hasImportPath = true
+				break
+			}
 		}
-		funcName := f.Name.Name
-
-		// Check function name
-		if !strings.HasPrefix(funcName, PREFIX) || len(funcName) <= len(PREFIX) {
-			continue
-		}
-		if r, _ := utf8.DecodeRune([]byte(funcName[len(PREFIX):])); !unicode.IsUpper(r) && !unicode.IsDigit(r) {
-			continue
-		}
-
-		// Check function signature
-
-		if f.Type.Results != nil || len(f.Type.Params.List) != 1 {
-			return FuncSignError{fset, file, f}
-		}
-		pointerType, ok := f.Type.Params.List[0].Type.(*ast.StarExpr)
-		if !ok {
-			return FuncSignError{fset, file, f}
-		}
-		selector, ok := pointerType.X.(*ast.SelectorExpr)
-		if !ok {
-			return FuncSignError{fset, file, f}
-		}
-		if selector.X.(*ast.Ident).Name != "making" || selector.Sel.Name != "M" {
-			return FuncSignError{fset, file, f}
+		if !hasImportPath {
+			fmt.Printf("%s: no import path: %q\n", pkgName, IMPORT_PATH)
+			return nil
 		}
 
-		funcDecls = append(funcDecls, funcDecl{funcName, f.Doc.Text()})
+		for _, decl := range file.Decls {
+			f, ok := decl.(*ast.FuncDecl)
+			if !ok {
+				continue
+			}
+			funcName := f.Name.Name
+
+			// Check function name
+			if !strings.HasPrefix(funcName, PREFIX) || len(funcName) <= len(PREFIX) {
+				continue
+			}
+			if r, _ := utf8.DecodeRune([]byte(funcName[len(PREFIX):])); !unicode.IsUpper(r) && !unicode.IsDigit(r) {
+				continue
+			}
+
+			// Check function signature
+
+			if f.Type.Results != nil || len(f.Type.Params.List) != 1 {
+				return FuncSignError{fset, file, f}
+			}
+			pointerType, ok := f.Type.Params.List[0].Type.(*ast.StarExpr)
+			if !ok {
+				return FuncSignError{fset, file, f}
+			}
+			selector, ok := pointerType.X.(*ast.SelectorExpr)
+			if !ok {
+				return FuncSignError{fset, file, f}
+			}
+			if selector.X.(*ast.Ident).Name != "making" || selector.Sel.Name != "M" {
+				return FuncSignError{fset, file, f}
+			}
+
+			funcDecls = append(funcDecls, funcDecl{funcName, f.Doc.Text()})
+		}
 	}
 
 	if len(funcDecls) == 0 {
@@ -89,7 +118,8 @@ func Parser(dir string) error {
 	return nil
 }
 
-// * * *
+// == Errors
+//
 
 // NoShellError represents an incorrect function signature.
 type FuncSignError struct {
@@ -103,5 +133,26 @@ func (e FuncSignError) Error() string {
 		e.fileSet.Position(e.file.Pos()),
 		e.file.Name.Name,
 		e.funcDecl.Name.Name,
+	)
+}
+
+// MulPkgError represents a directory with multiple packages.
+type MulPkgError struct {
+	path string
+	pkgs map[string]*ast.Package
+}
+
+func (e MulPkgError) Error() string {
+	msg := make([]string, len(e.pkgs))
+
+	i := 0
+	for name, _ := range e.pkgs {
+		msg[i] = fmt.Sprintf("%q", name)
+		i++
+	}
+
+	return fmt.Sprintf("can't load package: found packages %s in '%s'",
+		strings.Join(msg, ", "),
+		e.path,
 	)
 }

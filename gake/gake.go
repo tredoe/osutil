@@ -18,12 +18,12 @@ func main() {
 	args := flag.Args()
 	if len(args) == 0 {
 		args = append(args, ".")
+	} else if len(args) > 1 {
+		// TODO: error
 	}
 
-	for _, v := range args {
-		err := Parser(v)
-		if err != nil {
-			log.Fatal(err)
-		}
+	err := ParseDir(args[0])
+	if err != nil {
+		log.Fatal(err)
 	}
 }
