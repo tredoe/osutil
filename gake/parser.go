@@ -22,6 +22,11 @@ const (
 	PREFIX      = "Make"
 )
 
+type goFile struct {
+	name      string
+	funcDecls []funcDecl
+}
+
 type funcDecl struct {
 	name string
 	doc  string
@@ -60,21 +65,10 @@ func ParseDir(path string) error {
 		break
 	}
 
-	funcDecls := make([]funcDecl, 0)
+	goFiles := make([]goFile, 0)
 
-	for _, file := range pkgs[pkgName].Files {
-		// Check import path
-		hasImportPath := false
-		for _, v := range file.Imports {
-			if v.Path.Value == IMPORT_PATH {
-				hasImportPath = true
-				break
-			}
-		}
-		if !hasImportPath {
-			fmt.Printf("%s: no import path: %q\n", pkgName, IMPORT_PATH)
-			return nil
-		}
+	for filename, file := range pkgs[pkgName].Files {
+		funcDecls := make([]funcDecl, 0)
 
 		for _, decl := range file.Decls {
 			f, ok := decl.(*ast.FuncDecl)
@@ -110,9 +104,26 @@ func ParseDir(path string) error {
 
 			funcDecls = append(funcDecls, funcDecl{funcName, f.Doc.Text()})
 		}
+
+		// Check import path
+		if len(funcDecls) != 0 {
+			hasImportPath := false
+			for _, v := range file.Imports {
+				if v.Path.Value == IMPORT_PATH {
+					hasImportPath = true
+					break
+				}
+			}
+			if !hasImportPath {
+				fmt.Printf("%s: no import path: %s\n", filename, IMPORT_PATH)
+				return nil
+			}
+		}
+
+		goFiles = append(goFiles, goFile{filename, funcDecls})
 	}
 
-	if len(funcDecls) == 0 {
+	if len(goFiles) == 0 {
 		fmt.Printf("  [no makes to run]\n")
 	}
 	return nil

@@ -9,6 +9,8 @@ package main
 import (
 	"flag"
 	"log"
+
+	"github.com/kless/goutil"
 )
 
 func main() {
@@ -24,6 +26,10 @@ func main() {
 
 	err := ParseDir(args[0])
 	if err != nil {
-		log.Fatal(err)
+		goutil.Fatalf("%s", err)
 	}
+
+/*	if err = Builder(files); err != nil {
+		goutil.Fatalf("%s", err)
+	}*/
 }

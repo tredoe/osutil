@@ -16,11 +16,15 @@ func TestCommand(t *testing.T) {
 	commandTests := []goutil.CommandTest{
 		{
 			Args: "./testdata/",
-			Out:  "",
+			//Out:  "",
 		},
 		{
 			Args:   "./testdata/multi_pkg/",
 			Stderr: `can't load package: found packages "main2" ('testdata/multi_pkg/test3_make.go', 'testdata/multi_pkg/test2_make.go'), "main" ('testdata/multi_pkg/test1_make.go') in './testdata/multi_pkg/'` + "\n",
+			//Out:  "",
+		},
+		{
+			Args: "./testdata/redeclare/",
 			//Out:  "",
 		},
 	}
