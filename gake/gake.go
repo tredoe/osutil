@@ -24,12 +24,12 @@ func main() {
 		// TODO: error
 	}
 
-	err := ParseDir(args[0])
+	pkg, err := ParseDir(args[0])
 	if err != nil {
 		goutil.Fatalf("%s", err)
 	}
 
-/*	if err = Builder(files); err != nil {
+	if err = Builder(pkg); err != nil {
 		goutil.Fatalf("%s", err)
-	}*/
+	}
 }

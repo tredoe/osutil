@@ -14,21 +14,22 @@ import (
 	"github.com/kless/goutil"
 )
 
-func Builder(files []string) error {
-	workDir, err := ioutil.TempDir("", "gake")
+func Builder(pkg *Package) error {
+	workDir, err := ioutil.TempDir("", "gake-")
 	if err != nil {
 		return err
 	}
 	goutil.AtExit(func() { os.RemoveAll(workDir) })
 
 	// Copy all files to the temporary directory.
-	for _, f := range files {
-		src, err := ioutil.ReadFile(f)
+	for _, f := range pkg.files {
+		src, err := ioutil.ReadFile(f.name)
 		if err != nil {
 			return err
 		}
 
-		if err = ioutil.WriteFile(filepath.Join(workDir, f), src, 0644); err != nil {
+		err = ioutil.WriteFile(filepath.Join(workDir, filepath.Base(f.name)), src, 0644)
+		if err != nil {
 			return err
 		}
 	}

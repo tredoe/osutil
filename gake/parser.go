@@ -7,6 +7,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -22,12 +23,20 @@ const (
 	PREFIX      = "Make"
 )
 
-type goFile struct {
-	name      string
-	funcDecls []funcDecl
+// Package represents a set of Go files.
+type Package struct {
+	name  string
+	files []File
 }
 
-type funcDecl struct {
+// File represents a set of declarations of functions.
+type File struct {
+	name      string
+	funcDecls []FuncDecl
+}
+
+// FuncDecl represents a function.
+type FuncDecl struct {
 	name string
 	doc  string
 }
@@ -38,7 +47,7 @@ type funcDecl struct {
 // not starting with a lower case letter) and should have the signature,
 //
 //	func MakeXXX(m *making.M) { ... }
-func ParseDir(path string) error {
+func ParseDir(path string) (*Package, error) {
 	filter := func(info os.FileInfo) bool {
 		if strings.HasSuffix(info.Name(), "_make.go") {
 			return true
@@ -50,13 +59,12 @@ func ParseDir(path string) error {
 
 	pkgs, err := parser.ParseDir(fset, path, filter, parser.ParseComments|parser.DeclarationErrors)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(pkgs) == 0 {
-		fmt.Printf("  [no make files]\n")
-		return nil
+		return nil, ErrNoMake
 	} else if len(pkgs) > 1 {
-		return MultiPkgError{path, pkgs}
+		return nil, MultiPkgError{path, pkgs}
 	}
 
 	pkgName := ""
@@ -65,10 +73,10 @@ func ParseDir(path string) error {
 		break
 	}
 
-	goFiles := make([]goFile, 0)
+	goFiles := make([]File, 0)
 
 	for filename, file := range pkgs[pkgName].Files {
-		funcDecls := make([]funcDecl, 0)
+		funcDecls := make([]FuncDecl, 0)
 
 		for _, decl := range file.Decls {
 			f, ok := decl.(*ast.FuncDecl)
@@ -88,21 +96,21 @@ func ParseDir(path string) error {
 			// Check function signature
 
 			if f.Type.Results != nil || len(f.Type.Params.List) != 1 {
-				return FuncSignError{fset, file, f}
+				return nil, FuncSignError{fset, file, f}
 			}
 			pointerType, ok := f.Type.Params.List[0].Type.(*ast.StarExpr)
 			if !ok {
-				return FuncSignError{fset, file, f}
+				return nil, FuncSignError{fset, file, f}
 			}
 			selector, ok := pointerType.X.(*ast.SelectorExpr)
 			if !ok {
-				return FuncSignError{fset, file, f}
+				return nil, FuncSignError{fset, file, f}
 			}
 			if selector.X.(*ast.Ident).Name != "making" || selector.Sel.Name != "M" {
-				return FuncSignError{fset, file, f}
+				return nil, FuncSignError{fset, file, f}
 			}
 
-			funcDecls = append(funcDecls, funcDecl{funcName, f.Doc.Text()})
+			funcDecls = append(funcDecls, FuncDecl{funcName, f.Doc.Text()})
 		}
 
 		// Check import path
@@ -116,34 +124,39 @@ func ParseDir(path string) error {
 			}
 			if !hasImportPath {
 				fmt.Printf("%s: no import path: %s\n", filename, IMPORT_PATH)
-				return nil
+				return nil, nil
 			}
 		}
 
-		goFiles = append(goFiles, goFile{filename, funcDecls})
+		goFiles = append(goFiles, File{filename, funcDecls})
 	}
 
 	if len(goFiles) == 0 {
-		fmt.Printf("  [no makes to run]\n")
+		return nil, ErrNoMakeRun
 	}
-	return nil
+	return &Package{pkgName, goFiles}, nil
 }
 
 // == Errors
 //
 
+var (
+	ErrNoMake    = errors.New("  [no make files]")
+	ErrNoMakeRun = errors.New("  [no makes to run]")
+)
+
 // NoShellError represents an incorrect function signature.
 type FuncSignError struct {
 	fileSet  *token.FileSet
 	file     *ast.File
-	funcDecl *ast.FuncDecl
+	FuncDecl *ast.FuncDecl
 }
 
 func (e FuncSignError) Error() string {
 	return fmt.Sprintf("%s: %s.%s should have the signature func(*making.M)",
 		e.fileSet.Position(e.file.Pos()),
 		e.file.Name.Name,
-		e.funcDecl.Name.Name,
+		e.FuncDecl.Name.Name,
 	)
 }
 
