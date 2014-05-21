@@ -8,37 +8,47 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"os"
 )
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
 
 	args := flag.Args()
 	if len(args) == 0 {
 		args = append(args, ".")
-	} else if len(args) > 1 {
-		// TODO: error
 	}
 
-	pkg, err := ParseDir(args[0])
-	if err != nil {
-		log.Fatal(err)
+	errList := make([]error, 0)
+	workDir := ""
+
+	for _, v := range args {
+		pkg, err := ParseDir(v)
+		if err != nil {
+			errList = append(errList, err)
+			continue
+		}
+
+		if workDir, err = Build(pkg); err != nil {
+			errList = append(errList, err)
+			continue
+		}
 	}
 
-	workDir, err := Build(pkg)
+	err := os.RemoveAll(workDir)
+	exitCode := 0
+
+	if len(errList) != 0 {
+		exitCode = 1
+		for _, v := range errList {
+			fmt.Fprintf(os.Stderr, "%s\n", v)
+		}
+	}
 	if err != nil {
-		goto exit
+		exitCode = 1
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 	}
 
-exit:
-	err2 := os.RemoveAll(workDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err2 != nil {
-		log.Fatal(err2)
-	}
+	os.Exit(exitCode)
 }
