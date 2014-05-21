@@ -9,8 +9,7 @@ package main
 import (
 	"flag"
 	"log"
-
-	"github.com/kless/goutil"
+	"os"
 )
 
 func main() {
@@ -26,10 +25,20 @@ func main() {
 
 	pkg, err := ParseDir(args[0])
 	if err != nil {
-		goutil.Fatalf("%s", err)
+		log.Fatal(err)
 	}
 
-	if err = Builder(pkg); err != nil {
-		goutil.Fatalf("%s", err)
+	workDir, err := Build(pkg)
+	if err != nil {
+		goto exit
+	}
+
+exit:
+	err2 := os.RemoveAll(workDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err2 != nil {
+		log.Fatal(err2)
 	}
 }

@@ -9,30 +9,41 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
-
-	"github.com/kless/goutil"
 )
 
-func Builder(pkg *Package) error {
-	workDir, err := ioutil.TempDir("", "gake-")
+// Build uses the tool "go build" to compile the make files.
+// Returns the working directory and the error, if any.
+func Build(pkg *Package) (workDir string, err error) {
+	workDir, err = ioutil.TempDir("", "gake-")
 	if err != nil {
-		return err
+		return
 	}
-	goutil.AtExit(func() { os.RemoveAll(workDir) })
 
 	// Copy all files to the temporary directory.
 	for _, f := range pkg.files {
 		src, err := ioutil.ReadFile(f.name)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		err = ioutil.WriteFile(filepath.Join(workDir, filepath.Base(f.name)), src, 0644)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
-	return nil
+	if err = os.Chdir(workDir); err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command("go", "build")
+	//cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err = cmd.Run(); err != nil {
+		return "", err
+	}
+
+	return
 }
