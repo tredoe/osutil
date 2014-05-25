@@ -36,7 +36,6 @@ func main() {
 		}
 	}
 
-	err := os.RemoveAll(workDir)
 	exitCode := 0
 
 	if len(errList) != 0 {
@@ -45,7 +44,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "%s\n", v)
 		}
 	}
-	if err != nil {
+	if err := os.RemoveAll(workDir); err != nil {
 		exitCode = 1
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 	}

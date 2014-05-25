@@ -17,24 +17,35 @@ import (
 
 // Build uses the tool "go build" to compile the make files.
 // Returns the working directory and the error, if any.
-func Build(pkg *Package) (workDir string, err error) {
+func Build(pkg *makePackage) (workDir string, err error) {
 	workDir, err = ioutil.TempDir("", "gake-")
 	if err != nil {
 		return
 	}
 
 	// Copy all files to the temporary directory.
-	for _, f := range pkg.files {
-		src, err := ioutil.ReadFile(f.name)
+	for _, f := range pkg.Files {
+		src, err := ioutil.ReadFile(f.Name)
 		if err != nil {
 			return "", err
 		}
-
-		err = ioutil.WriteFile(filepath.Join(workDir, filepath.Base(f.name)), src, 0644)
+		err = ioutil.WriteFile(filepath.Join(workDir, filepath.Base(f.Name)), src, 0644)
 		if err != nil {
 			return "", err
 		}
 	}
+
+	// Write the 'makemain.go' file.
+	f, err := os.Create(filepath.Join(workDir, "makemain.go"))
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	if err = makemainTmpl.Execute(f, pkg); err != nil {
+		return "", err
+	}
+
+	// Build
 
 	if err = os.Chdir(workDir); err != nil {
 		return "", err
@@ -54,30 +65,18 @@ func Build(pkg *Package) (workDir string, err error) {
 	return
 }
 
-var testmainTmpl = template.Must(template.New("main").Parse(`
+var makemainTmpl = template.Must(template.New("main").Parse(`
 package main
 
 import (
 	"regexp"
-	"testing"
 
 	"github.com/kless/osutil/gake/making"
-
-{{if .NeedTest}}
-	_test {{.Package.ImportPath | printf "%q"}}
-{{end}}
 )
 
-var tests = []testing.InternalTest{
-{{range .Tests}}
-	{"{{.Name}}", {{.Package}}.{{.Name}}},
-{{end}}
-}
-
-var examples = []testing.InternalExample{
-{{range .Examples}}
-	{"{{.Name}}", {{.Package}}.{{.Name}}, {{.Output | printf "%q"}}},
-{{end}}
+var makes = []making.InternalMake{
+{{range $_, $f := .Files}}{{range $f.MakeFuncs}}
+	{"{{.Name}}", {{.Name}}},{{end}}{{end}}
 }
 
 var matchPat string
@@ -95,7 +94,6 @@ func matchString(pat, str string) (result bool, err error) {
 }
 
 func main() {
-	testing.Main(matchString, tests, benchmarks, examples)
+	making.Main(matchString, makes)
 }
-
 `))

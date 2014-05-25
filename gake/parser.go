@@ -23,22 +23,22 @@ const (
 	PREFIX      = "Make"
 )
 
-// Package represents a set of Go files.
-type Package struct {
-	name  string
-	files []File
+// makePackage represents a package of make files.
+type makePackage struct {
+	Name  string
+	Files []makeFile
 }
 
-// File represents a set of declarations of functions.
-type File struct {
-	name      string
-	funcDecls []FuncDecl
+// makeFile represents a set of declarations of make functions.
+type makeFile struct {
+	Name      string
+	MakeFuncs []makeFunc
 }
 
-// FuncDecl represents a function.
-type FuncDecl struct {
-	name string
-	doc  string
+// makeFunc represents a make function.
+type makeFunc struct {
+	Name string
+	Doc  string
 }
 
 // The "gake" command expects to find make functions in the "*_make.go" files.
@@ -47,7 +47,7 @@ type FuncDecl struct {
 // not starting with a lower case letter) and should have the signature,
 //
 //	func MakeXXX(m *making.M) { ... }
-func ParseDir(path string) (*Package, error) {
+func ParseDir(path string) (*makePackage, error) {
 	filter := func(info os.FileInfo) bool {
 		if strings.HasSuffix(info.Name(), "_make.go") {
 			return true
@@ -73,10 +73,10 @@ func ParseDir(path string) (*Package, error) {
 		break
 	}
 
-	goFiles := make([]File, 0)
+	goFiles := make([]makeFile, 0)
 
 	for filename, file := range pkgs[pkgName].Files {
-		funcDecls := make([]FuncDecl, 0)
+		makeFuncs := make([]makeFunc, 0)
 
 		for _, decl := range file.Decls {
 			f, ok := decl.(*ast.FuncDecl)
@@ -110,11 +110,11 @@ func ParseDir(path string) (*Package, error) {
 				return nil, FuncSignError{fset, file, f}
 			}
 
-			funcDecls = append(funcDecls, FuncDecl{funcName, f.Doc.Text()})
+			makeFuncs = append(makeFuncs, makeFunc{funcName, f.Doc.Text()})
 		}
 
 		// Check import path
-		if len(funcDecls) != 0 {
+		if len(makeFuncs) != 0 {
 			hasImportPath := false
 			for _, v := range file.Imports {
 				if v.Path.Value == IMPORT_PATH {
@@ -123,18 +123,33 @@ func ParseDir(path string) (*Package, error) {
 				}
 			}
 			if !hasImportPath {
-				fmt.Printf("%s: no import path: %s\n", filename, IMPORT_PATH)
-				return nil, nil
+				return nil, ImportPathError{filename}
 			}
 		}
 
-		goFiles = append(goFiles, File{filename, funcDecls})
+		// Check the build constraint
+		hasBuildCons := false
+		for _, c := range file.Comments {
+			comment := c.Text()
+			if strings.HasPrefix(comment, "+build") {
+				words := strings.Split(comment, " ")
+				if words[0] == "+build" && words[1] == "gake\n" {
+					hasBuildCons = true
+					break
+				}
+			}
+		}
+		if !hasBuildCons {
+			return nil, BuildConsError{filename}
+		}
+
+		goFiles = append(goFiles, makeFile{filename, makeFuncs})
 	}
 
 	if len(goFiles) == 0 {
 		return nil, ErrNoMakeRun
 	}
-	return &Package{pkgName, goFiles}, nil
+	return &makePackage{pkgName, goFiles}, nil
 }
 
 // == Errors
@@ -145,19 +160,37 @@ var (
 	ErrNoMakeRun = errors.New("  [no makes to run]")
 )
 
-// NoShellError represents an incorrect function signature.
+// BuildConsError reports lacking of build constraint.
+type BuildConsError struct {
+	filename string
+}
+
+func (e BuildConsError) Error() string {
+	return fmt.Sprintf("%s: no build constraint: \"+build gake\"", e.filename)
+}
+
+// FuncSignError represents an incorrect function signature.
 type FuncSignError struct {
 	fileSet  *token.FileSet
-	file     *ast.File
-	FuncDecl *ast.FuncDecl
+	makeFile *ast.File
+	makeFunc *ast.FuncDecl
 }
 
 func (e FuncSignError) Error() string {
 	return fmt.Sprintf("%s: %s.%s should have the signature func(*making.M)",
-		e.fileSet.Position(e.file.Pos()),
-		e.file.Name.Name,
-		e.FuncDecl.Name.Name,
+		e.fileSet.Position(e.makeFile.Pos()),
+		e.makeFile.Name.Name,
+		e.makeFunc.Name.Name,
 	)
+}
+
+// ImportPathError represents a file without a necessary import path.
+type ImportPathError struct {
+	filename string
+}
+
+func (e ImportPathError) Error() string {
+	return fmt.Sprintf("%s: no import path: %s", e.filename, IMPORT_PATH)
 }
 
 // MultiPkgError represents an error due to multiple packages into a same directory.
