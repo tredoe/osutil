@@ -18,14 +18,30 @@ func TestCommand(t *testing.T) {
 			Args: "./testdata/",
 			//Out:  "",
 		},
+
+		{
+			Args:   "./testdata/build_cons/",
+			Stderr: BuildConsError{"testdata/build_cons/test-constraint_make.go"}.Error() + "\n",
+		},
+		{
+			Args:   "./testdata/func_sign/",
+			Stderr: `testdata/func_sign/test-signature_make.go:3:1: main.MakeTest should have the signature func(*making.M)` + "\n",
+		},
+		{
+			Args:   "./testdata/import_path/",
+			Stderr: ImportPathError{"testdata/import_path/test-import_make.go"}.Error() + "\n",
+		},
 		{
 			Args:   "./testdata/multi_pkg/",
 			Stderr: `can't load package: found packages "main2" ('testdata/multi_pkg/test3_make.go', 'testdata/multi_pkg/test2_make.go'), "main" ('testdata/multi_pkg/test1_make.go') in './testdata/multi_pkg/'` + "\n",
-			//Out:  "",
 		},
 		{
-			Args: "./testdata/redeclare/",
-			//Out:  "",
+			Args:   "./testdata/nomake/",
+			Stderr: ErrNoMake.Error() + "\n",
+		},
+		{
+			Args:   "./testdata/nomake_run/",
+			Stderr: ErrNoMakeRun.Error() + "\n",
 		},
 	}
 

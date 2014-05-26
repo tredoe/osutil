@@ -41,13 +41,14 @@ func main() {
 	if len(errList) != 0 {
 		exitCode = 1
 		for _, v := range errList {
-			fmt.Fprintf(os.Stderr, "%s\n", v)
+			fmt.Fprintf(os.Stderr, "%s", v)
 		}
 	}
-	if err := os.RemoveAll(workDir); err != nil {
+	/*if err := os.RemoveAll(workDir); err != nil {
 		exitCode = 1
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-	}
+	}*/
+	println(workDir)
 
 	os.Exit(exitCode)
 }

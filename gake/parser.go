@@ -112,19 +112,20 @@ func ParseDir(path string) (*makePackage, error) {
 
 			makeFuncs = append(makeFuncs, makeFunc{funcName, f.Doc.Text()})
 		}
+		if len(makeFuncs) == 0 {
+			continue
+		}
 
 		// Check import path
-		if len(makeFuncs) != 0 {
-			hasImportPath := false
-			for _, v := range file.Imports {
-				if v.Path.Value == IMPORT_PATH {
-					hasImportPath = true
-					break
-				}
+		hasImportPath := false
+		for _, v := range file.Imports {
+			if v.Path.Value == IMPORT_PATH {
+				hasImportPath = true
+				break
 			}
-			if !hasImportPath {
-				return nil, ImportPathError{filename}
-			}
+		}
+		if !hasImportPath {
+			return nil, ImportPathError{filename}
 		}
 
 		// Check the build constraint
