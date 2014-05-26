@@ -134,7 +134,7 @@ func decorate(s string) string {
 }
 
 // TB is the interface common to M.
-type TB interface {
+/*type TB interface {
 	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
 	Fail()
@@ -153,9 +153,9 @@ type TB interface {
 	// interface and so future additions to it will not
 	// violate Go 1 compatibility.
 	private()
-}
+}*/
 
-var _ TB = (*M)(nil)
+//var _ TB = (*M)(nil)
 
 // M is a type passed to Make functions to manage make state and support formatted make logs.
 // Logs are accumulated during execution and dumped to standard error when done.

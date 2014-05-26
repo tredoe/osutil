@@ -20,8 +20,12 @@ func TestCommand(t *testing.T) {
 		},
 
 		{
-			Args:   "./testdata/build_cons/",
-			Stderr: BuildConsError{"testdata/build_cons/test-constraint_make.go"}.Error() + "\n",
+			Args:   "./testdata/build_cons1/",
+			Stderr: BuildConsError{"testdata/build_cons1/test1-constraint_make.go"}.Error() + "\n",
+		},
+		{
+			Args:   "./testdata/build_cons2/",
+			Stderr: BuildConsPosError{"testdata/build_cons2/test2-constraint_make.go"}.Error() + "\n",
 		},
 		{
 			Args:   "./testdata/func_sign/",

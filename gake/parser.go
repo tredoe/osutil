@@ -135,6 +135,11 @@ func ParseDir(path string) (*makePackage, error) {
 			if strings.HasPrefix(comment, "+build") {
 				words := strings.Split(comment, " ")
 				if words[0] == "+build" && words[1] == "gake\n" {
+					// Check whether the build constraint is after of "package"
+					if c.Pos() > file.Package {
+						return nil, BuildConsPosError{filename}
+					}
+
 					hasBuildCons = true
 					break
 				}
@@ -168,6 +173,15 @@ type BuildConsError struct {
 
 func (e BuildConsError) Error() string {
 	return fmt.Sprintf("%s: no build constraint: \"+build gake\"", e.filename)
+}
+
+// BuildConsPosError reports bad position of build constraint.
+type BuildConsPosError struct {
+	filename string
+}
+
+func (e BuildConsPosError) Error() string {
+	return fmt.Sprintf("%s: build constraint after of \"package\" directive", e.filename)
 }
 
 // FuncSignError represents an incorrect function signature.
