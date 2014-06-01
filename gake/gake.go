@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	//"path/filepath"
 )
 
 func main() {
@@ -23,8 +24,14 @@ func main() {
 	errList := make([]error, 0)
 	workDir := ""
 
-	for _, v := range args {
-		pkg, err := ParseDir(v)
+	for _, arg := range args {
+		/*absPath, err := filepath.Abs(arg)
+		if err != nil {
+			errList = append(errList, err)
+			continue
+		}*/
+
+		pkg, err := ParseDir(arg)
 		if err != nil {
 			errList = append(errList, err)
 			continue
@@ -44,11 +51,10 @@ func main() {
 			fmt.Fprintf(os.Stderr, "%s", v)
 		}
 	}
-	/*if err := os.RemoveAll(workDir); err != nil {
+	if err := os.RemoveAll(workDir); err != nil {
 		exitCode = 1
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-	}*/
-	println(workDir)
+	}
 
 	os.Exit(exitCode)
 }

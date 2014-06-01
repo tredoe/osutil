@@ -29,14 +29,14 @@ func Build(pkg *makePackage) (workDir string, err error) {
 		if err != nil {
 			return "", err
 		}
-		err = ioutil.WriteFile(filepath.Join(workDir, filepath.Base(f.Name)), src, 0644)
+		err = ioutil.WriteFile(workDir+string(os.PathSeparator)+filepath.Base(f.Name), src, 0644)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// Write the 'makemain.go' file.
-	f, err := os.Create(filepath.Join(workDir, "makemain.go"))
+	f, err := os.Create(workDir + string(os.PathSeparator) + "makemain.go")
 	if err != nil {
 		return "", err
 	}
@@ -47,28 +47,30 @@ func Build(pkg *makePackage) (workDir string, err error) {
 
 	// Build
 
-	if err = os.Chdir(workDir); err != nil {
-		return "", err
-	}
-
-	dstFile := "foo"
+	cmdName := workDir + string(os.PathSeparator) + "foo"
 	if runtime.GOOS == "windows" {
-		dstFile += ".exe"
+		cmdName += ".exe"
 	}
-	cmd := exec.Command("go", "build", "--tags", "gake", "-o", dstFile)
-	//cmd.Stdout = os.Stdout
+	cmd := new(exec.Cmd)
+
+	if !*makeX {
+		cmd = exec.Command("go", "build", "--tags", "gake", "-o", cmdName)
+	} else {
+		cmd = exec.Command("go", "build", "--tags", "gake", "-o", cmdName, "-x")
+	}
+	cmd.Dir = workDir
 	cmd.Stderr = os.Stderr
+
 	if err = cmd.Run(); err != nil {
 		return "", err
 	}
 
 	// Run
-
-	cmd = exec.Command(dstFile, makeArgs()...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err = cmd.Run(); err != nil {
-		return "", err
+	if !*makeC {
+		cmd = exec.Command(cmdName, getMakeArgs()...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
 	}
 
 	return

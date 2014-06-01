@@ -16,36 +16,36 @@ func TestCommand(t *testing.T) {
 	commandTests := []goutil.CommandTest{
 		{
 			Args: "./testdata/",
-			//Out:  "",
+			Out:  "Hello!\nBye!\nPASS\n",
 		},
 
 		{
 			Args:   "./testdata/build_cons1/",
-			Stderr: BuildConsError{"testdata/build_cons1/test1-constraint_make.go"}.Error() + "\n",
+			Stderr: BuildConsError{"testdata/build_cons1/test1-constraint_make.go"}.Error(),
 		},
 		{
 			Args:   "./testdata/build_cons2/",
-			Stderr: BuildConsPosError{"testdata/build_cons2/test2-constraint_make.go"}.Error() + "\n",
+			Stderr: BuildConsPosError{"testdata/build_cons2/test2-constraint_make.go"}.Error(),
 		},
 		{
 			Args:   "./testdata/func_sign/",
-			Stderr: `testdata/func_sign/test-signature_make.go:3:1: main.MakeTest should have the signature func(*making.M)` + "\n",
+			Stderr: `testdata/func_sign/test-signature_make.go:3:1: main.MakeTest should have the signature func(*making.M)`,
 		},
 		{
 			Args:   "./testdata/import_path/",
-			Stderr: ImportPathError{"testdata/import_path/test-import_make.go"}.Error() + "\n",
+			Stderr: ImportPathError{"testdata/import_path/test-import_make.go"}.Error(),
 		},
 		{
 			Args:   "./testdata/multi_pkg/",
-			Stderr: `can't load package: found packages "main2" ('testdata/multi_pkg/test3_make.go', 'testdata/multi_pkg/test2_make.go'), "main" ('testdata/multi_pkg/test1_make.go') in './testdata/multi_pkg/'` + "\n",
+			Stderr: `can't load package: found packages "main2" ('testdata/multi_pkg/test3_make.go', 'testdata/multi_pkg/test2_make.go'), "main" ('testdata/multi_pkg/test1_make.go') in './testdata/multi_pkg/'`,
 		},
 		{
 			Args:   "./testdata/nomake/",
-			Stderr: ErrNoMake.Error() + "\n",
+			Stderr: ErrNoMake.Error(),
 		},
 		{
 			Args:   "./testdata/nomake_run/",
-			Stderr: ErrNoMakeRun.Error() + "\n",
+			Stderr: ErrNoMakeRun.Error(),
 		},
 	}
 

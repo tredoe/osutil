@@ -73,19 +73,29 @@ var (
 	makeKillTimeout = 3 * time.Minute
 )
 
-// makeArgs returns the arguments to be passed to "making".
-func makeArgs() []string {
+// getMakeArgs returns the arguments to be passed to "gake/making".
+func getMakeArgs() []string {
 	args := make([]string, 0)
 
-	// Rewrite known flags to have "make" before them
 	flag.Visit(func(f *flag.Flag) {
+		isBoolean := false
+
 		switch f.Name {
+		case "c", "x": // Flags skipped
+			return
+
+		// Rewrite known flags to have "make" before them
 		case "cpu", "parallel", "run", "short", "timeout", "v":
 			f.Name = "make." + f.Name
+			fallthrough
+		case "make.short", "make.v":
+			isBoolean = true
 		}
 
 		args = append(args, "-"+f.Name)
-		args = append(args, f.Value.String())
+		if !isBoolean {
+			args = append(args, f.Value.String())
+		}
 	})
 
 	return args
