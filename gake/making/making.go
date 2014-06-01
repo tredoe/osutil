@@ -1,4 +1,6 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors.
+// Copyright 2014 Jonas mg
+// All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -54,7 +56,7 @@ var (
 	// "gake", the binary always runs in the source directory for the package;
 	// this flag lets "gake" tell the binary to write the files in the directory where
 	// the "gake" command is run.
-	outputDir = flag.String("make.outputdir", "", "directory in which to write profiles")
+	//outputDir = flag.String("make.outputdir", "", "directory in which to write profiles")
 
 	// Report as makes are run; default is silent for success.
 	chatty = flag.Bool("make.v", false, "verbose: print additional output")
@@ -153,9 +155,9 @@ func decorate(s string) string {
 	// interface and so future additions to it will not
 	// violate Go 1 compatibility.
 	private()
-}*/
+}
 
-//var _ TB = (*M)(nil)
+var _ TB = (*M)(nil)*/
 
 // M is a type passed to Make functions to manage make state and support formatted make logs.
 // Logs are accumulated during execution and dumped to standard error when done.
@@ -502,7 +504,7 @@ func RunMakes(matchString func(pat, str string) (bool, error), makes []InternalM
 
 // toOutputDir returns the file name relocated, if required, to outputDir.
 // Simple implementation to avoid pulling in path/filepath.
-func toOutputDir(path string) string {
+/*func toOutputDir(path string) string {
 	if *outputDir == "" || path == "" {
 		return path
 	}
@@ -526,7 +528,7 @@ func toOutputDir(path string) string {
 		return path
 	}
 	return fmt.Sprintf("%s%c%s", *outputDir, os.PathSeparator, path)
-}
+}*/
 
 var timer *time.Timer
 

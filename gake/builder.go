@@ -62,6 +62,15 @@ func Build(pkg *makePackage) (workDir string, err error) {
 		return "", err
 	}
 
+	// Run
+
+	cmd = exec.Command(dstFile, makeArgs()...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err = cmd.Run(); err != nil {
+		return "", err
+	}
+
 	return
 }
 
