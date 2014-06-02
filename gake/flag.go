@@ -14,7 +14,7 @@ import (
 )
 
 var makeUsage = func() {
-	fmt.Fprintf(os.Stderr, `Usage of gake:
+	fmt.Fprintf(os.Stderr, `Usage: gake [-c] [-x] [make flags] path...
 
   -c=false: compile but do not run the binary
   -x=false: print command lines as they are executed

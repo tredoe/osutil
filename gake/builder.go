@@ -17,37 +17,38 @@ import (
 
 // Build uses the tool "go build" to compile the make files.
 // Returns the working directory and the error, if any.
-func Build(pkg *makePackage) (workDir string, err error) {
-	workDir, err = ioutil.TempDir("", "gake-")
+func Build(pkg *makePackage) error {
+	workDir, err := ioutil.TempDir("", "gake-")
 	if err != nil {
 		return
 	}
+	defer os.RemoveAll(workDir)
 
 	// Copy all files to the temporary directory.
 	for _, f := range pkg.Files {
 		src, err := ioutil.ReadFile(f.Name)
 		if err != nil {
-			return "", err
+			return err
 		}
 		err = ioutil.WriteFile(workDir+string(os.PathSeparator)+filepath.Base(f.Name), src, 0644)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
 	// Write the 'makemain.go' file.
 	f, err := os.Create(workDir + string(os.PathSeparator) + "makemain.go")
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer f.Close()
 	if err = makemainTmpl.Execute(f, pkg); err != nil {
-		return "", err
+		return err
 	}
 
 	// Build
 
-	cmdName := workDir + string(os.PathSeparator) + "foo"
+	cmdName := workDir + string(os.PathSeparator) + CMD_NAME
 	if runtime.GOOS == "windows" {
 		cmdName += ".exe"
 	}
@@ -62,7 +63,7 @@ func Build(pkg *makePackage) (workDir string, err error) {
 	cmd.Stderr = os.Stderr
 
 	if err = cmd.Run(); err != nil {
-		return "", err
+		return err
 	}
 
 	// Run
