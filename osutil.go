@@ -7,6 +7,7 @@
 package osutil
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 )
@@ -34,4 +35,14 @@ func ExecSudo(cmd string, args ...string) error {
 // the beginning so there is not to wait until that it been requested later.
 func Sudo() error {
 	return Exec("sudo", "/bin/true")
+}
+
+var errNoRoot = errors.New("MUST have administrator privileges")
+
+// MustbeRoot returns an error message if the user is not root.
+func MustbeRoot() error {
+	if os.Getuid() != 0 {
+		return errNoRoot
+	}
+	return nil
 }
