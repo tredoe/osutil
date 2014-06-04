@@ -22,18 +22,8 @@ func (p zypp) Remove(name ...string) error {
 	return osutil.Exec("/usr/bin/zypper", append(args, name...)...)
 }
 
-func (p zypp) RemoveMeta(name ...string) error {
-	args := []string{"remove"}
-
-	return osutil.Exec("/usr/bin/zypper", append(args, name...)...)
-}
-
 func (p zypp) Purge(name ...string) error {
 	return p.Remove(name...)
-}
-
-func (p zypp) PurgeMeta(name ...string) error {
-	return p.RemoveMeta(name...)
 }
 
 func (p zypp) Update() error {

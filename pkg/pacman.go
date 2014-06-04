@@ -17,33 +17,15 @@ func (p pacman) Install(name ...string) error {
 }
 
 func (p pacman) Remove(name ...string) error {
-	args := []string{"-R"}
-
-	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
-}
-
-func (p pacman) RemoveMeta(name ...string) error {
 	args := []string{"-Rs"}
 
-	if err := osutil.Exec("/usr/bin/pacman", append(args, name...)...);err != nil {
-		return err
-	}
-	return p.Remove(name...)
+	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
 }
 
 func (p pacman) Purge(name ...string) error {
-	args := []string{"-Rn"}
-
-	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
-}
-
-func (p pacman) PurgeMeta(name ...string) error {
 	args := []string{"-Rsn"}
 
-	if err := osutil.Exec("/usr/bin/pacman", append(args, name...)...); err != nil {
-		return err
-	}
-	return p.Purge(name...)
+	return osutil.Exec("/usr/bin/pacman", append(args, name...)...)
 }
 
 func (p pacman) Update() error {
@@ -55,5 +37,5 @@ func (p pacman) Upgrade() error {
 }
 
 func (p pacman) Clean() error {
-	return nil
+	return osutil.Exec("/usr/bin/paccache", "-r")
 }

@@ -20,19 +20,8 @@ func (p ebuild) Remove(name ...string) error {
 	return osutil.Exec("/usr/bin/emerge", append(args, name...)...)
 }
 
-func (p ebuild) RemoveMeta(name ...string) error {
-	if err := p.Remove(name...); err != nil {
-		return err
-	}
-	return osutil.Exec("/usr/bin/emerge", "--depclean")
-}
-
 func (p ebuild) Purge(name ...string) error {
 	return p.Remove(name...)
-}
-
-func (p ebuild) PurgeMeta(name ...string) error {
-	return p.RemoveMeta(name...)
 }
 
 func (p ebuild) Update() error {
@@ -40,9 +29,14 @@ func (p ebuild) Update() error {
 }
 
 func (p ebuild) Upgrade() error {
-	return osutil.Exec("/usr/bin/emerge", "--update", "--deep", "--with-bdeps=y", "--newuse world")
+	return osutil.Exec("/usr/bin/emerge", "--update", "--deep", "--with-bdeps=y", "--newuse @world")
 }
 
 func (p ebuild) Clean() error {
-	return nil
+	err := osutil.Exec("/usr/bin/emerge", "--update", "--deep", "--newuse @world")
+	if err != nil {
+		return err
+	}
+
+	return osutil.Exec("/usr/bin/emerge", "--depclean")
 }

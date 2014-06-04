@@ -22,24 +22,10 @@ func (p deb) Remove(name ...string) error {
 	return osutil.ExecSudo("/usr/bin/apt-get", append(args, name...)...)
 }
 
-func (p deb) RemoveMeta(name ...string) error {
-	if err := p.Remove(name...); err != nil {
-		return err
-	}
-	return osutil.ExecSudo("/usr/bin/apt-get", "autoremove", "-y")
-}
-
 func (p deb) Purge(name ...string) error {
 	args := []string{"purge", "-y"}
 
 	return osutil.ExecSudo("/usr/bin/apt-get", append(args, name...)...)
-}
-
-func (p deb) PurgeMeta(name ...string) error {
-	if err := p.Purge(name...); err != nil {
-		return err
-	}
-	return osutil.ExecSudo("/usr/bin/apt-get", "autoremove", "--purge", "-y")
 }
 
 func (p deb) Update() error {
@@ -51,5 +37,10 @@ func (p deb) Upgrade() error {
 }
 
 func (p deb) Clean() error {
+	err := osutil.ExecSudo("/usr/bin/apt-get", "autoremove", "-y")
+	if err != nil {
+		return err
+	}
+
 	return osutil.ExecSudo("/usr/bin/apt-get", "clean")
 }

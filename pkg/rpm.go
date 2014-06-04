@@ -22,16 +22,8 @@ func (p rpm) Remove(name ...string) error {
 	return osutil.Exec("/usr/bin/yum", append(args, name...)...)
 }
 
-func (p rpm) RemoveMeta(name ...string) error {
-	return p.Remove(name...)
-}
-
 func (p rpm) Purge(name ...string) error {
 	return p.Remove(name...)
-}
-
-func (p rpm) PurgeMeta(name ...string) error {
-	return p.RemoveMeta(name...)
 }
 
 func (p rpm) Update() error {

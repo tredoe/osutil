@@ -27,20 +27,14 @@ import (
 
 // Packager is the common interface to handle different package systems.
 type Packager interface {
-	// Install installs a package.
+	// Install installs packages.
 	Install(name ...string) error
 
-	// Remove removes a package.
+	// Remove removes packages.
 	Remove(name ...string) error
 
-	// RemoveMeta removes a meta-package.
-	RemoveMeta(name ...string) error
-
-	// Purge removes a package and its configuration files.
+	// Purge removes packages and its configuration files.
 	Purge(name ...string) error
-
-	// PurgeMeta removes a meta-package and theirs configuration files.
-	PurgeMeta(name ...string) error
 
 	// Update resynchronizes the package index files from their sources.
 	Update() error
@@ -48,7 +42,7 @@ type Packager interface {
 	// Upgrade upgrades all the packages on the system.
 	Upgrade() error
 
-	// Clean erases packages downloaded.
+	// Clean erases both packages downloaded and orphaned dependencies.
 	Clean() error
 }
 
