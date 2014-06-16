@@ -308,6 +308,24 @@ func (u *User) Add(system bool) (err error) {
 	return
 }
 
+// AddUser adds an user.
+func AddUser(name string) (uid int, err error) {
+	u := NewUser(name)
+	if err = u.Add(false); err != nil {
+		return
+	}
+	return u.UID, nil
+}
+
+// AddSystemUser adds a system user.
+func AddSystemUser(name string) (uid int, err error) {
+	u := NewUser(name)
+	if err = u.Add(true); err != nil {
+		return
+	}
+	return u.UID, nil
+}
+
 // DelUser removes an user from the system.
 func DelUser(name string) error {
 	err := edit(name, &User{}, true)

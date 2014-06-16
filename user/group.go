@@ -238,11 +238,11 @@ func (g *Group) Add(system bool) (err error) {
 func AddGroup(name string, members ...string) (gid int, err error) {
 	g := &Group{name, "", -1, members}
 	if err = g.Add(false); err != nil {
-		return 0, err
+		return
 	}
 	gs := &GShadow{name, "", []string{""}, members}
 	if err = gs.Add(nil); err != nil {
-		return 0, err
+		return
 	}
 
 	return g.GID, nil
@@ -252,11 +252,11 @@ func AddGroup(name string, members ...string) (gid int, err error) {
 func AddSystemGroup(name string, members ...string) (gid int, err error) {
 	g := &Group{name, "", -1, members}
 	if err = g.Add(true); err != nil {
-		return 0, err
+		return
 	}
 	gs := &GShadow{name, "", []string{""}, members}
 	if err = gs.Add(nil); err != nil {
-		return 0, err
+		return
 	}
 
 	return g.GID, nil
