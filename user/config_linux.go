@@ -14,8 +14,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kless/osutil/user/crypt"
 	"github.com/kless/osutil/config/shconf"
+	"github.com/kless/osutil/user/crypt"
 )
 
 // TODO: handle des, bcrypt and rounds in SHA2.

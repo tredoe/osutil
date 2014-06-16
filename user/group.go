@@ -163,7 +163,7 @@ func LookupInGroup(field groupField, value interface{}, n int) ([]*Group, error)
 
 // Getgroups returns a list of the groups that the caller belongs to.
 func Getgroups() (entries []string) {
-	user := Getuser()
+	user := GetUsername()
 
 	// The user could have its own group.
 	if _, err := LookupGroup(user); err == nil {

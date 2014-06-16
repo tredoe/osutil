@@ -218,9 +218,20 @@ func LookupInUser(field userField, value interface{}, n int) ([]*User, error) {
 	return entries, err
 }
 
-// Getuser returns the user name from the environment or password database,
+// GetUsername returns the user name from the password database for the actual
+// process.
+// It panics whther there is an error at searching the UID.
+func GetUsername() string {
+	entry, err := LookupUID(os.Getuid())
+	if err != nil {
+		panic(err)
+	}
+	return entry.Name
+}
+
+// GetUsernameFromEnv returns the user name from the environment variable
 // for the actual process.
-func Getuser() string {
+func GetUsernameFromEnv() string {
 	user_env := []string{"USER", "USERNAME", "LOGNAME", "LNAME"}
 
 	for _, val := range user_env {
@@ -229,9 +240,7 @@ func Getuser() string {
 			return name
 		}
 	}
-
-	entry, _ := LookupUID(os.Getuid())
-	return entry.Name
+	return ""
 }
 
 // == Editing
