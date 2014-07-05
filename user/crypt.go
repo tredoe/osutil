@@ -99,7 +99,7 @@ func ChPasswd(user string, key []byte) error {
 	}
 	shadow.Passwd(key)
 
-	return edit(user, shadow, false)
+	return edit(user, shadow)
 }
 
 // ChGPasswd updates group passwd.
@@ -111,7 +111,7 @@ func ChGPasswd(group string, key []byte) error {
 	}
 	gshadow.Passwd(key)
 
-	return edit(group, gshadow, false)
+	return edit(group, gshadow)
 }
 
 // == Locking
@@ -125,7 +125,7 @@ func LockUser(name string) error {
 
 	if shadow.password[0] != _LOCK_CHAR {
 		shadow.password = string(_LOCK_CHAR) + shadow.password
-		return edit(name, shadow, false)
+		return edit(name, shadow)
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func UnlockUser(name string) error {
 
 	if shadow.password[0] == _LOCK_CHAR {
 		shadow.password = shadow.password[1:]
-		return edit(name, shadow, false)
+		return edit(name, shadow)
 	}
 	return nil
 }

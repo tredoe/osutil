@@ -178,7 +178,7 @@ func Getgroups() (entries []string) {
 	return
 }
 
-// == Editing
+// == Adding
 //
 
 // Add adds a new group.
@@ -262,13 +262,36 @@ func AddSystemGroup(name string, members ...string) (gid int, err error) {
 	return g.GID, nil
 }
 
+// == Removing
+//
+
 // DelGroup removes a group from the system.
-func DelGroup(name string) error {
-	err := edit(name, &Group{}, true)
+func DelGroup(name string) (err error) {
+	err = del(name, &Group{})
 	if err == nil {
-		err = edit(name, &GShadow{}, true)
+		err = del(name, &GShadow{})
 	}
-	return err
+	return
+}
+
+// == Changing
+//
+
+// AddUsersToGroup adds the members to a group.
+func AddUsersToGroup(name string, members ...string) error {
+	for i, v := range members {
+		if v == "" {
+			return EmptyError(fmt.Sprintf("members[%s]", strconv.Itoa(i)))
+		}
+	}
+
+	gr, err := LookupGroup(name)
+	if err != nil {
+		return err
+	}
+
+	gr.UserList = append(gr.UserList, members...)
+	return edit(name, gr)
 }
 
 // == Utility
@@ -283,3 +306,10 @@ func checkGroup(group []string, value string) bool {
 	}
 	return false
 }
+
+// * * *
+
+// EmptyError reports an empty field.
+type EmptyError string
+
+func (e EmptyError) Error() string { return "empty field: " + string(e) }

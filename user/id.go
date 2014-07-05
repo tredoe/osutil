@@ -9,6 +9,7 @@ package user
 import (
 	"io"
 	"os"
+	"strconv"
 )
 
 // nextUID returns the next free user id to use, according to whether it is a
@@ -151,4 +152,28 @@ func NextGID() (int, error) {
 	db, gid, err := nextGUID(false)
 	db.close()
 	return gid, err
+}
+
+// * * *
+
+// An IdRangeError records an error during the search for a free id to use.
+type IdRangeError struct {
+	LastId   int
+	IsSystem bool
+	IsUser   bool
+}
+
+func (e *IdRangeError) Error() string {
+	str := ""
+	if e.IsSystem {
+		str = "system "
+	}
+	if e.IsUser {
+		str += "user: "
+	} else {
+		str += "group: "
+	}
+	str += strconv.Itoa(e.LastId)
+
+	return "reached maximum identifier in " + str
 }

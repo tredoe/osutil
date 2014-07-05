@@ -2,11 +2,11 @@ user
 ====
 Provides access to the users database. It is available for Linux (by now).
 
-[Documentation online](http://gowalker.org/github.com/kless/user)
+[Documentation online](http://gowalker.org/github.com/kless/osutil/user)
 
 ## Installation
 
-	go get github.com/kless/user
+	go get github.com/kless/osutil/user
 
 To run the tests, it is necessary to run them as root.  
 Do not worry because the tests are done in copies of original files.

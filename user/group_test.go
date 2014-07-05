@@ -147,3 +147,24 @@ func TestGroup_Add(t *testing.T) {
 		t.Error("system group: expected to get members: %s", sg.UserList)
 	}
 }
+
+func TestGroup_Changing(t *testing.T) {
+	g_first, err := LookupGroup(GROUP)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = AddUsersToGroup(GROUP, USER, SYS_USER)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	g_last, err := LookupGroup(GROUP)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(g_first.UserList) == len(g_last.UserList) {
+		t.Error("expected to add users to a group")
+	}
+}

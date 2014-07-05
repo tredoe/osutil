@@ -243,7 +243,7 @@ func GetUsernameFromEnv() string {
 	return ""
 }
 
-// == Editing
+// == Adding
 //
 
 // Add adds a new user.
@@ -326,11 +326,14 @@ func AddSystemUser(name string) (uid int, err error) {
 	return u.UID, nil
 }
 
+// == Removing
+//
+
 // DelUser removes an user from the system.
-func DelUser(name string) error {
-	err := edit(name, &User{}, true)
+func DelUser(name string) (err error) {
+	err = del(name, &User{})
 	if err == nil {
-		err = edit(name, &Shadow{}, true)
+		err = del(name, &Shadow{})
 	}
-	return err
+	return
 }

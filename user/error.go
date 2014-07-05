@@ -36,28 +36,6 @@ func (e *fieldError) Error() string {
 		e.field, e.file, e.line)
 }
 
-// An IdRangeError records an error during the search for a free id to use.
-type IdRangeError struct {
-	LastId   int
-	IsSystem bool
-	IsUser   bool
-}
-
-func (e *IdRangeError) Error() string {
-	str := ""
-	if e.IsSystem {
-		str = "system "
-	}
-	if e.IsUser {
-		str += "user: "
-	} else {
-		str += "group: "
-	}
-	str += strconv.Itoa(e.LastId)
-
-	return "reached maximum identifier in " + str
-}
-
 // An HomeError reports an error at adding an account with invalid home directory.
 type HomeError string
 

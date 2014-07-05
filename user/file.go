@@ -96,22 +96,23 @@ func lookUp(structer structurer, field, value interface{}, n int) (interface{}, 
 	return nil, ErrNoFound
 }
 
-// edit is a generic editor for the given user/group name.
-// If remove is true, it removes the structure of the user/group name.
+// == Editing
 //
-// It is created a backup before of modify the original shadowed files.
+
+// DO_BACKUP does a backup before of modify the original files.
+var DO_BACKUP = true
+
+// _FILES_BACKUPED are the files that already have been backuped.
+var _FILES_BACKUPED = make(map[string]struct{}, 4)
+
+// _edit is a generic editor for the given user/group name.
+// If remove is true, it removes the structure of the user/group name.
 //
 // TODO: get better performance if start to store since when the file is edited.
 // So there is to store the size of all lines read until that point to seek from
 // there.
-func edit(name string, struc structurer, remove bool) (err error) {
-	// Backup
+func _edit(name string, struc structurer, remove bool) (err error) {
 	filename := struc.filename()
-	if filename == _SHADOW_FILE || filename == _GSHADOW_FILE {
-		if err = file.Copy(filename, filename+"-"); err != nil {
-			return err
-		}
-	}
 
 	dbf, err := openDBFile(filename, os.O_RDWR)
 	if err != nil {
@@ -148,6 +149,15 @@ func edit(name string, struc structurer, remove bool) (err error) {
 	}
 
 	if isFound {
+		if DO_BACKUP {
+			if _, ok := _FILES_BACKUPED[filename]; !ok {
+				if err = file.Copy(filename, filename+"-"); err != nil {
+					return err
+				}
+				_FILES_BACKUPED[filename] = struct{}{}
+			}
+		}
+
 		if _, err = dbf.file.Seek(0, os.SEEK_SET); err != nil {
 			return
 		}
@@ -161,4 +171,12 @@ func edit(name string, struc structurer, remove bool) (err error) {
 	}
 
 	return
+}
+
+func edit(name string, struc structurer) error {
+	return _edit(name, struc, false)
+}
+
+func del(name string, struc structurer) error {
+	return _edit(name, struc, true)
 }

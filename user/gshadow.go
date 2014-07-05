@@ -166,7 +166,7 @@ func LookupInGShadow(field gshadowField, value string, n int) ([]*GShadow, error
 	return entries, err
 }
 
-// == Editing
+// == Adding
 //
 
 // Add adds a new shadowed group.
