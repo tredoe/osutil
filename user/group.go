@@ -290,7 +290,12 @@ func AddUsersToGroup(name string, members ...string) error {
 		return err
 	}
 
-	gr.UserList = append(gr.UserList, members...)
+	if len(gr.UserList) == 1 && gr.UserList[0] == "" {
+		gr.UserList = members
+	} else {
+		gr.UserList = append(gr.UserList, members...)
+	}
+
 	return edit(name, gr)
 }
 

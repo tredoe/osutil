@@ -105,6 +105,19 @@ var DO_BACKUP = true
 // _FILES_BACKUPED are the files that already have been backuped.
 var _FILES_BACKUPED = make(map[string]struct{}, 4)
 
+// backup does a backup of a file.
+func backup(filename string) error {
+	if DO_BACKUP {
+		if _, ok := _FILES_BACKUPED[filename]; !ok {
+			if err := file.Backup(filename); err != nil {
+				return err
+			}
+			_FILES_BACKUPED[filename] = struct{}{}
+		}
+	}
+	return nil
+}
+
 // _edit is a generic editor for the given user/group name.
 // If remove is true, it removes the structure of the user/group name.
 //
@@ -149,13 +162,8 @@ func _edit(name string, struc structurer, remove bool) (err error) {
 	}
 
 	if isFound {
-		if DO_BACKUP {
-			if _, ok := _FILES_BACKUPED[filename]; !ok {
-				if err = file.Copy(filename, filename+"-"); err != nil {
-					return err
-				}
-				_FILES_BACKUPED[filename] = struct{}{}
-			}
+		if err = backup(filename); err != nil {
+			return
 		}
 
 		if _, err = dbf.file.Seek(0, os.SEEK_SET); err != nil {

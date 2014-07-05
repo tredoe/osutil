@@ -164,7 +164,8 @@ func TestGroup_Changing(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(g_first.UserList) == len(g_last.UserList) {
-		t.Error("expected to add users to a group")
+	if len(g_first.UserList) == len(g_last.UserList) ||
+		g_last.UserList[0] != USER || g_last.UserList[1] != SYS_USER {
+		t.Error("expected to add users into a group")
 	}
 }

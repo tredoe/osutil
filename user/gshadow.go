@@ -11,8 +11,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-
-	"github.com/kless/osutil/file"
 )
 
 type gshadowField int
@@ -189,8 +187,8 @@ func (gs *GShadow) Add(key []byte) (err error) {
 	}
 
 	// Backup
-	if err = file.Copy(_GSHADOW_FILE, _GSHADOW_FILE+"-"); err != nil {
-		return err
+	if err = backup(_GSHADOW_FILE); err != nil {
+		return
 	}
 
 	db, err := openDBFile(_GSHADOW_FILE, os.O_WRONLY|os.O_APPEND)

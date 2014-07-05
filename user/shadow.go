@@ -13,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/kless/osutil/file"
 )
 
 type shadowField int
@@ -424,8 +422,8 @@ func (s *Shadow) Add(key []byte) (err error) {
 	}
 
 	// Backup
-	if err = file.Copy(_SHADOW_FILE, _SHADOW_FILE+"-"); err != nil {
-		return err
+	if err = backup(_SHADOW_FILE); err != nil {
+		return
 	}
 
 	db, err := openDBFile(_SHADOW_FILE, os.O_WRONLY|os.O_APPEND)
