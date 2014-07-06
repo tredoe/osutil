@@ -148,7 +148,7 @@ func TestGroup_Add(t *testing.T) {
 	}
 }
 
-func TestGroup_Changing(t *testing.T) {
+func TestGroup_Change(t *testing.T) {
 	g_first, err := LookupGroup(GROUP)
 	if err != nil {
 		t.Fatal(err)
@@ -165,7 +165,8 @@ func TestGroup_Changing(t *testing.T) {
 	}
 
 	if len(g_first.UserList) == len(g_last.UserList) ||
-		g_last.UserList[0] != USER || g_last.UserList[1] != SYS_USER {
+		g_last.UserList[0] != USER ||
+		g_last.UserList[1] != SYS_USER {
 		t.Error("expected to add users into a group")
 	}
 }

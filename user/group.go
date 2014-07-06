@@ -290,6 +290,15 @@ func AddUsersToGroup(name string, members ...string) error {
 		return err
 	}
 
+	// Check if some member is already in the file.
+	for _, u := range gr.UserList {
+		for _, m := range members {
+			if u == m {
+				return fmt.Errorf("user %q is already set", u)
+			}
+		}
+	}
+
 	if len(gr.UserList) == 1 && gr.UserList[0] == "" {
 		gr.UserList = members
 	} else {
