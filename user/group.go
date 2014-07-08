@@ -279,6 +279,9 @@ func DelGroup(name string) (err error) {
 
 // AddUsersToGroup adds the members to a group.
 func AddUsersToGroup(name string, members ...string) error {
+	if len(members) == 0 {
+		return fmt.Errorf("no members to add")
+	}
 	for i, v := range members {
 		if v == "" {
 			return EmptyError(fmt.Sprintf("members[%s]", strconv.Itoa(i)))

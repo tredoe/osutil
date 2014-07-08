@@ -7,10 +7,11 @@
 package user
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/kless/goutil"
+	"github.com/kless/osutil"
 	"github.com/kless/osutil/file"
 )
 
@@ -28,7 +29,10 @@ var GID, SYS_GID int
 // == Copy the system files before of be edited.
 
 func init() {
-	var err error
+	err := osutil.MustbeRoot()
+	if err != nil {
+		goutil.Fatalln(err)
+	}
 
 	if _USER_FILE, err = file.CopytoTemp(_USER_FILE, ""); err != nil {
 		goto _error
@@ -47,7 +51,7 @@ func init() {
 
 _error:
 	removeTempFiles()
-	log.Fatal(err)
+	goutil.Fatal(err)
 }
 
 func removeTempFiles() {
@@ -55,7 +59,7 @@ func removeTempFiles() {
 
 	for _, f := range files {
 		if err := os.Remove(f); err != nil {
-			log.Print(err)
+			goutil.Errorln(err)
 		}
 	}
 }
