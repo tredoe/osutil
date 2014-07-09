@@ -161,21 +161,51 @@ func LookupInGroup(field groupField, value interface{}, n int) ([]*Group, error)
 	return entries, err
 }
 
-// Getgroups returns a list of the groups that the caller belongs to.
-func Getgroups() (entries []string) {
+// Getgroups returns a list of the numeric ids of groups that the caller
+// belongs to.
+func Getgroups() []int {
 	user := GetUsername()
+	list := make([]int, 0)
+
+	// The user could have its own group.
+	if g, err := LookupGroup(user); err == nil {
+		list = append(list, g.GID)
+	}
+
+	groups, err := LookupInGroup(G_MEMBER, user, -1)
+	if err != nil {
+		if err != ErrNoFound {
+			panic(err)
+		}
+	}
+
+	for _, v := range groups {
+		list = append(list, v.GID)
+	}
+	return list
+}
+
+// GetgroupsName returns a list of the groups that the caller belongs to.
+func GetgroupsName() []string {
+	user := GetUsername()
+	list := make([]string, 0)
 
 	// The user could have its own group.
 	if _, err := LookupGroup(user); err == nil {
-		entries = append(entries, user)
+		list = append(list, user)
 	}
 
-	groupEntries, _ := LookupInGroup(G_MEMBER, user, -1)
-	for _, v := range groupEntries {
-		entries = append(entries, v.Name)
+	groups, err := LookupInGroup(G_MEMBER, user, -1)
+	if err != nil {
+		if err != ErrNoFound {
+			panic(err)
+		}
+	}
+	for _, v := range groups {
+		list = append(list, v.Name)
 	}
 
-	return
+	return list
 }
 
 // == Adding

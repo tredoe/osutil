@@ -85,6 +85,22 @@ func TestGroupError(t *testing.T) {
 	}
 }
 
+func TestGetGroups(t *testing.T) {
+	gids := Getgroups()
+	gnames := GetgroupsName()
+
+	for i, gid := range gids {
+		g, err := LookupGID(gid)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if g.Name != gnames[i] {
+			t.Errorf("expected to match GID and group name")
+		}
+	}
+}
+
 func TestGroup_Add(t *testing.T) {
 	member0 := "m0"
 	member1 := "m1"
