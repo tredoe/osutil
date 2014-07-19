@@ -43,6 +43,31 @@ type Group struct {
 	//
 	// A list of the usernames that are members of this group, separated by commas.
 	UserList []string
+
+	// A system group?
+	IsOfSystem bool
+}
+
+// AddGroup returns a new Group.
+func NewGroup(name string, members ...string) *Group {
+	return &Group{
+		Name:     name,
+		password: "",
+		GID:      -1,
+		UserList: members,
+	}
+}
+
+// NewSystemGroup adds a system group.
+func NewSystemGroup(name string, members ...string) *Group {
+	return &Group{
+		Name:     name,
+		password: "",
+		GID:      -1,
+		UserList: members,
+
+		IsOfSystem: true,
+	}
 }
 
 func (g *Group) filename() string { return _GROUP_FILE }
@@ -67,10 +92,10 @@ func parseGroup(row string) (*Group, error) {
 	}
 
 	return &Group{
-		fields[0],
-		fields[1],
-		gid,
-		strings.Split(fields[3], ","),
+		Name:     fields[0],
+		password: fields[1],
+		GID:      gid,
+		UserList: strings.Split(fields[3], ","),
 	}, nil
 }
 
@@ -109,10 +134,10 @@ func (*Group) lookUp(line string, field, value interface{}) interface{} {
 
 	if isField {
 		return &Group{
-			allField[0],
-			allField[1],
-			intField[2],
-			arrayField[3],
+			Name:     allField[0],
+			password: allField[1],
+			GID:      intField[2],
+			UserList: arrayField[3],
 		}
 	}
 	return nil
@@ -208,15 +233,18 @@ func GetgroupsName() []string {
 	return list
 }
 
-// == Adding
+// == Add
 //
 
 // AddGroup adds a group.
 func AddGroup(name string, members ...string) (gid int, err error) {
-	g := &Group{name, "", -1, members}
-	if err = g.Add(); err != nil {
+	g := NewGroup(name, members...)
+	_, err = g.Add()
+	if err != nil {
 		return
 	}
+
+	// TODO: GShadow should have AddGShadow?
 	gs := &GShadow{name, "", []string{""}, members}
 	if err = gs.Add(nil); err != nil {
 		return
@@ -227,10 +255,13 @@ func AddGroup(name string, members ...string) (gid int, err error) {
 
 // AddSystemGroup adds a system group.
 func AddSystemGroup(name string, members ...string) (gid int, err error) {
-	g := &Group{name, "", -1, members}
-	if err = g.AddSystem(); err != nil {
+	g := NewSystemGroup(name, members...)
+	_, err = g.Add()
+	if err != nil {
 		return
 	}
+
+	// TODO: like above
 	gs := &GShadow{name, "", []string{""}, members}
 	if err = gs.Add(nil); err != nil {
 		return
@@ -240,42 +271,29 @@ func AddSystemGroup(name string, members ...string) (gid int, err error) {
 }
 
 // Add adds a new group.
-func (g *Group) Add() (err error) { return g._add(false) }
-
-// AddSystem adds a new system group.
-func (g *Group) AddSystem() (err error) {
-	if g.GID == 0 {
-		g.GID = -1
-	}
-	return g._add(true)
-}
-
-// _add adds a new group.
-// Whether the argument system is true, it is added a system group.
 // Whether GID is < 0, it will choose the first id available in the range set
 // in the system configuration.
-func (g *Group) _add(system bool) (err error) {
+func (g *Group) Add() (gid int, err error) {
 	loadConfig()
 
 	group, err := LookupGroup(g.Name)
 	if err != nil && err != ErrNoFound {
-		return
+		return 0, err
 	}
 	if group != nil {
-		return ErrExist
+		return 0, ErrExist
 	}
 
 	if g.Name == "" {
-		return RequiredError("Name")
+		return 0, RequiredError("Name")
 	}
 
 	var db *dbfile
 	if g.GID < 0 {
-		var gid int
-		db, gid, err = nextGUID(system)
+		db, gid, err = nextGUID(g.IsOfSystem)
 		if err != nil {
 			db.close()
-			return err
+			return 0, err
 		}
 		g.GID = gid
 	} else {
@@ -287,9 +305,9 @@ func (g *Group) _add(system bool) (err error) {
 		// Check if Id is unique.
 		_, err = LookupGID(g.GID)
 		if err == nil {
-			return IdUsedError(g.GID)
+			return 0, IdUsedError(g.GID)
 		} else if err != ErrNoFound {
-			return err
+			return 0, err
 		}
 	}
 
@@ -303,7 +321,7 @@ func (g *Group) _add(system bool) (err error) {
 	return
 }
 
-// == Removing
+// == Remove
 //
 
 // DelGroup removes a group from the system.
@@ -315,7 +333,7 @@ func DelGroup(name string) (err error) {
 	return
 }
 
-// == Changing
+// == Change
 //
 
 // AddUsersToGroup adds the members to a group.

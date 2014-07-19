@@ -74,9 +74,12 @@ type User struct {
 	// environmental variable. If this field is empty, it defaults to the value
 	// "/bin/sh".
 	Shell string
+
+	// A system user?
+	IsOfSystem bool
 }
 
-// NewUser returns a structure User with both fields "Dir" and "Shell" got from
+// NewUser returns a new User with both fields "Dir" and "Shell" got from
 // the system configuration.
 func NewUser(username string) *User {
 	loadConfig()
@@ -85,6 +88,19 @@ func NewUser(username string) *User {
 		Name:  username,
 		Dir:   path.Join(config.useradd.HOME, username),
 		Shell: config.useradd.SHELL,
+	}
+}
+
+// NewSystemUser returns a new system user.
+func NewSystemUser(name, homeDir string, gid int) *User {
+	return &User{
+		Name:  name,
+		Dir:   homeDir,
+		Shell: "/bin/false",
+		UID:   -1,
+		GID:   gid,
+
+		IsOfSystem: true,
 	}
 }
 
@@ -111,14 +127,15 @@ func parseUser(row string) (*User, error) {
 		return nil, &fieldError{_USER_FILE, row, "GID"}
 	}
 
+	// TODO: set field IsOfSystem
 	return &User{
-		fields[0],
-		fields[1],
-		uid,
-		gid,
-		fields[4],
-		fields[5],
-		fields[6],
+		Name:     fields[0],
+		password: fields[1],
+		UID:      uid,
+		GID:      gid,
+		Gecos:    fields[4],
+		Dir:      fields[5],
+		Shell:    fields[6],
 	}, nil
 }
 
@@ -163,13 +180,13 @@ func (*User) lookUp(line string, field, value interface{}) interface{} {
 
 	if isField {
 		return &User{
-			allField[0],
-			allField[1],
-			intField[2],
-			intField[3],
-			allField[4],
-			allField[5],
-			allField[6],
+			Name:     allField[0],
+			password: allField[1],
+			UID:      intField[2],
+			GID:      intField[3],
+			Gecos:    allField[4],
+			Dir:      allField[5],
+			Shell:    allField[6],
 		}
 	}
 	return nil
@@ -243,43 +260,13 @@ func GetUsernameFromEnv() string {
 	return ""
 }
 
-// == Adding
+// == Add
 //
 
-// AddUser adds an user.
-func AddUser(name string) (uid int, err error) {
-	u := NewUser(name)
-	if err = u.Add(); err != nil {
-		return
-	}
-	return u.UID, nil
-}
-
-// AddSystemUser adds a system user.
-func AddSystemUser(name string) (uid int, err error) {
-	u := NewUser(name)
-	if err = u.AddSystem(); err != nil {
-		return
-	}
-	return u.UID, nil
-}
-
 // Add adds a new user.
-func (u *User) Add() error { return u._add(false) }
-
-// Add adds a new system user.
-func (u *User) AddSystem() error {
-	if u.UID == 0 {
-		u.UID = -1
-	}
-	return u._add(true)
-}
-
-// _add adds a new user.
-// Whether the argument system is true, it is added a system user.
 // Whether UID is < 0, it will choose the first id available in the range set
 // in the system configuration.
-func (u *User) _add(system bool) (err error) {
+func (u *User) Add() (uid int, err error) {
 	loadConfig()
 
 	user, err := LookupUser(u.Name)
@@ -287,43 +274,42 @@ func (u *User) _add(system bool) (err error) {
 		return
 	}
 	if user != nil {
-		return ErrExist
+		return 0, ErrExist
 	}
 
 	if u.Name == "" {
-		return RequiredError("Name")
+		return 0, RequiredError("Name")
 	}
 	if u.Dir == "" {
-		return RequiredError("Dir")
+		return 0, RequiredError("Dir")
 	}
 	if u.Dir == config.useradd.HOME {
-		return HomeError(config.useradd.HOME)
+		return 0, HomeError(config.useradd.HOME)
 	}
 	if u.Shell == "" {
-		return RequiredError("Shell")
+		return 0, RequiredError("Shell")
 	}
 
 	var db *dbfile
 	if u.UID < 0 {
-		var uid int
-		db, uid, err = nextUID(system)
+		db, uid, err = nextUID(u.IsOfSystem)
 		if err != nil {
 			db.close()
-			return err
+			return 0, err
 		}
 		u.UID = uid
 	} else {
 		db, err = openDBFile(_USER_FILE, os.O_WRONLY|os.O_APPEND)
 		if err != nil {
-			return
+			return 0, err
 		}
 
 		// Check if Id is unique.
 		_, err = LookupUID(u.UID)
 		if err == nil {
-			return IdUsedError(u.UID)
+			return 0, IdUsedError(u.UID)
 		} else if err != ErrNoFound {
-			return err
+			return 0, err
 		}
 	}
 
@@ -337,7 +323,7 @@ func (u *User) _add(system bool) (err error) {
 	return
 }
 
-// == Removing
+// == Remove
 //
 
 // DelUser removes an user from the system.
