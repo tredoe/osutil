@@ -393,7 +393,7 @@ func LookupInShadow(field shadowField, value interface{}, n int) ([]*Shadow, err
 	return entries, err
 }
 
-// == Adding
+// == Editing
 //
 
 // Add adds a new shadowed user.

@@ -68,6 +68,14 @@ type GShadow struct {
 	UserList []string
 }
 
+// NewGShadow returns a new GShadow.
+func NewGShadow(username string, members ...string) *GShadow {
+	return &GShadow{
+		Name:     username,
+		UserList: members,
+	}
+}
+
 func (gs *GShadow) filename() string { return _GSHADOW_FILE }
 
 func (gs *GShadow) String() string {
@@ -164,7 +172,7 @@ func LookupInGShadow(field gshadowField, value string, n int) ([]*GShadow, error
 	return entries, err
 }
 
-// == Adding
+// == Editing
 //
 
 // Add adds a new shadowed group.

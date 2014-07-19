@@ -76,17 +76,18 @@ type User struct {
 	Shell string
 
 	// A system user?
-	IsOfSystem bool
+	addSystemUser bool
 }
 
 // NewUser returns a new User with both fields "Dir" and "Shell" got from
 // the system configuration.
-func NewUser(username string) *User {
+func NewUser(name string, gid int) *User {
 	loadConfig()
 
 	return &User{
-		Name:  username,
-		Dir:   path.Join(config.useradd.HOME, username),
+		Name:  name,
+		GID:   gid,
+		Dir:   path.Join(config.useradd.HOME, name),
 		Shell: config.useradd.SHELL,
 	}
 }
@@ -100,11 +101,21 @@ func NewSystemUser(name, homeDir string, gid int) *User {
 		UID:   -1,
 		GID:   gid,
 
-		IsOfSystem: true,
+		addSystemUser: true,
 	}
 }
 
 func (u *User) filename() string { return _USER_FILE }
+
+// IsOfSystem indicates whether it is a system user.
+func (u *User) IsOfSystem() bool {
+	//loadConfig()
+
+	if u.UID > config.login.SYS_UID_MIN && u.UID < config.login.SYS_UID_MAX {
+		return true
+	}
+	return false
+}
 
 func (u *User) String() string {
 	return fmt.Sprintf("%s:%s:%d:%d:%s:%s:%s\n",
@@ -127,7 +138,6 @@ func parseUser(row string) (*User, error) {
 		return nil, &fieldError{_USER_FILE, row, "GID"}
 	}
 
-	// TODO: set field IsOfSystem
 	return &User{
 		Name:     fields[0],
 		password: fields[1],
@@ -260,8 +270,28 @@ func GetUsernameFromEnv() string {
 	return ""
 }
 
-// == Add
+// == Editing
 //
+
+// AddUser adds an user.
+func AddUser(name string, gid int) (uid int, err error) {
+	s := NewShadow(name)
+	if err = s.Add(nil); err != nil {
+		return
+	}
+
+	return NewUser(name, gid).Add()
+}
+
+// AddSystemUser adds a system user.
+func AddSystemUser(name, homeDir string, gid int) (uid int, err error) {
+	s := NewShadow(name)
+	if err = s.Add(nil); err != nil {
+		return
+	}
+
+	return NewSystemUser(name, homeDir, gid).Add()
+}
 
 // Add adds a new user.
 // Whether UID is < 0, it will choose the first id available in the range set
@@ -292,7 +322,7 @@ func (u *User) Add() (uid int, err error) {
 
 	var db *dbfile
 	if u.UID < 0 {
-		db, uid, err = nextUID(u.IsOfSystem)
+		db, uid, err = nextUID(u.addSystemUser)
 		if err != nil {
 			db.close()
 			return 0, err
@@ -322,9 +352,6 @@ func (u *User) Add() (uid int, err error) {
 	}
 	return
 }
-
-// == Remove
-//
 
 // DelUser removes an user from the system.
 func DelUser(name string) (err error) {

@@ -281,6 +281,7 @@ func loadConfig() {
 		if err := config.init(); err != nil {
 			panic(err)
 		}
+		fmt.Println(config)
 	})
 }
 

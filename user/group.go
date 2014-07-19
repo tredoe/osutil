@@ -45,7 +45,7 @@ type Group struct {
 	UserList []string
 
 	// A system group?
-	IsOfSystem bool
+	addSystemGroup bool
 }
 
 // AddGroup returns a new Group.
@@ -66,13 +66,21 @@ func NewSystemGroup(name string, members ...string) *Group {
 		GID:      -1,
 		UserList: members,
 
-		IsOfSystem: true,
+		addSystemGroup: true,
 	}
 }
 
 func (g *Group) filename() string { return _GROUP_FILE }
 
-func (g *Group) name() string { return g.Name }
+// IsOfSystem indicates whether it is a system group.
+func (g *Group) IsOfSystem() bool {
+	//loadConfig()
+
+	if g.GID > config.login.SYS_GID_MIN && g.GID < config.login.SYS_GID_MAX {
+		return true
+	}
+	return false
+}
 
 func (g *Group) String() string {
 	return fmt.Sprintf("%s:%s:%d:%s\n",
@@ -233,41 +241,27 @@ func GetgroupsName() []string {
 	return list
 }
 
-// == Add
+// == Editing
 //
 
 // AddGroup adds a group.
 func AddGroup(name string, members ...string) (gid int, err error) {
-	g := NewGroup(name, members...)
-	_, err = g.Add()
-	if err != nil {
+	s := NewGShadow(name, members...)
+	if err = s.Add(nil); err != nil {
 		return
 	}
 
-	// TODO: GShadow should have AddGShadow?
-	gs := &GShadow{name, "", []string{""}, members}
-	if err = gs.Add(nil); err != nil {
-		return
-	}
-
-	return g.GID, nil
+	return NewGroup(name, members...).Add()
 }
 
 // AddSystemGroup adds a system group.
 func AddSystemGroup(name string, members ...string) (gid int, err error) {
-	g := NewSystemGroup(name, members...)
-	_, err = g.Add()
-	if err != nil {
+	s := NewGShadow(name, members...)
+	if err = s.Add(nil); err != nil {
 		return
 	}
 
-	// TODO: like above
-	gs := &GShadow{name, "", []string{""}, members}
-	if err = gs.Add(nil); err != nil {
-		return
-	}
-
-	return g.GID, nil
+	return NewSystemGroup(name, members...).Add()
 }
 
 // Add adds a new group.
@@ -290,7 +284,7 @@ func (g *Group) Add() (gid int, err error) {
 
 	var db *dbfile
 	if g.GID < 0 {
-		db, gid, err = nextGUID(g.IsOfSystem)
+		db, gid, err = nextGUID(g.addSystemGroup)
 		if err != nil {
 			db.close()
 			return 0, err
@@ -321,9 +315,6 @@ func (g *Group) Add() (gid int, err error) {
 	return
 }
 
-// == Remove
-//
-
 // DelGroup removes a group from the system.
 func DelGroup(name string) (err error) {
 	err = del(name, &Group{})
@@ -332,9 +323,6 @@ func DelGroup(name string) (err error) {
 	}
 	return
 }
-
-// == Change
-//
 
 // AddUsersToGroup adds the members to a group.
 func AddUsersToGroup(name string, members ...string) error {
