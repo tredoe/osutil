@@ -211,11 +211,50 @@ func GetgroupsName() []string {
 // == Adding
 //
 
+// AddGroup adds a group.
+func AddGroup(name string, members ...string) (gid int, err error) {
+	g := &Group{name, "", -1, members}
+	if err = g.Add(); err != nil {
+		return
+	}
+	gs := &GShadow{name, "", []string{""}, members}
+	if err = gs.Add(nil); err != nil {
+		return
+	}
+
+	return g.GID, nil
+}
+
+// AddSystemGroup adds a system group.
+func AddSystemGroup(name string, members ...string) (gid int, err error) {
+	g := &Group{name, "", -1, members}
+	if err = g.AddSystem(); err != nil {
+		return
+	}
+	gs := &GShadow{name, "", []string{""}, members}
+	if err = gs.Add(nil); err != nil {
+		return
+	}
+
+	return g.GID, nil
+}
+
 // Add adds a new group.
+func (g *Group) Add() (err error) { return g._add(false) }
+
+// AddSystem adds a new system group.
+func (g *Group) AddSystem() (err error) {
+	if g.GID == 0 {
+		g.GID = -1
+	}
+	return g._add(true)
+}
+
+// _add adds a new group.
 // Whether the argument system is true, it is added a system group.
 // Whether GID is < 0, it will choose the first id available in the range set
 // in the system configuration.
-func (g *Group) Add(system bool) (err error) {
+func (g *Group) _add(system bool) (err error) {
 	loadConfig()
 
 	group, err := LookupGroup(g.Name)
@@ -262,34 +301,6 @@ func (g *Group) Add(system bool) (err error) {
 		err = err2
 	}
 	return
-}
-
-// AddGroup adds a group.
-func AddGroup(name string, members ...string) (gid int, err error) {
-	g := &Group{name, "", -1, members}
-	if err = g.Add(false); err != nil {
-		return
-	}
-	gs := &GShadow{name, "", []string{""}, members}
-	if err = gs.Add(nil); err != nil {
-		return
-	}
-
-	return g.GID, nil
-}
-
-// AddSystemGroup adds a system group.
-func AddSystemGroup(name string, members ...string) (gid int, err error) {
-	g := &Group{name, "", -1, members}
-	if err = g.Add(true); err != nil {
-		return
-	}
-	gs := &GShadow{name, "", []string{""}, members}
-	if err = gs.Add(nil); err != nil {
-		return
-	}
-
-	return g.GID, nil
 }
 
 // == Removing

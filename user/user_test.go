@@ -101,23 +101,23 @@ func TestUserError(t *testing.T) {
 	}
 
 	u := &User{}
-	if err = u.Add(false); err != RequiredError("Name") {
+	if err = u.Add(); err != RequiredError("Name") {
 		t.Error("expected to report RequiredError")
 	}
 
 	u = &User{Name: USER, Dir: config.useradd.HOME, Shell: config.useradd.SHELL}
-	if err = u.Add(false); err != HomeError(config.useradd.HOME) {
+	if err = u.Add(); err != HomeError(config.useradd.HOME) {
 		t.Error("expected to report HomeError")
 	}
 }
 
 func TestUser_Add(t *testing.T) {
 	user := &User{Name: USER, UID: -1, GID: GID, Dir: "/tmp", Shell: "/bin/sh"}
-	err := user.Add(false)
+	err := user.Add()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = user.Add(false); err == nil {
+	if err = user.Add(); err == nil {
 		t.Fatal("an user existent can not be added again")
 	} else {
 		if !IsExist(err) {
@@ -158,7 +158,7 @@ func TestUser_Add(t *testing.T) {
 	user.Name = SYS_USER
 	user.UID = -1
 	user.GID = SYS_GID
-	if err = user.Add(true); err != nil {
+	if err = user.AddSystem(); err != nil {
 		t.Fatal(err)
 	}
 

@@ -246,11 +246,40 @@ func GetUsernameFromEnv() string {
 // == Adding
 //
 
+// AddUser adds an user.
+func AddUser(name string) (uid int, err error) {
+	u := NewUser(name)
+	if err = u.Add(); err != nil {
+		return
+	}
+	return u.UID, nil
+}
+
+// AddSystemUser adds a system user.
+func AddSystemUser(name string) (uid int, err error) {
+	u := NewUser(name)
+	if err = u.AddSystem(); err != nil {
+		return
+	}
+	return u.UID, nil
+}
+
 // Add adds a new user.
+func (u *User) Add() error { return u._add(false) }
+
+// Add adds a new system user.
+func (u *User) AddSystem() error {
+	if u.UID == 0 {
+		u.UID = -1
+	}
+	return u._add(true)
+}
+
+// _add adds a new user.
 // Whether the argument system is true, it is added a system user.
 // Whether UID is < 0, it will choose the first id available in the range set
 // in the system configuration.
-func (u *User) Add(system bool) (err error) {
+func (u *User) _add(system bool) (err error) {
 	loadConfig()
 
 	user, err := LookupUser(u.Name)
@@ -306,24 +335,6 @@ func (u *User) Add(system bool) (err error) {
 		err = err2
 	}
 	return
-}
-
-// AddUser adds an user.
-func AddUser(name string) (uid int, err error) {
-	u := NewUser(name)
-	if err = u.Add(false); err != nil {
-		return
-	}
-	return u.UID, nil
-}
-
-// AddSystemUser adds a system user.
-func AddSystemUser(name string) (uid int, err error) {
-	u := NewUser(name)
-	if err = u.Add(true); err != nil {
-		return
-	}
-	return u.UID, nil
 }
 
 // == Removing

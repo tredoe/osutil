@@ -80,7 +80,7 @@ func TestGroupError(t *testing.T) {
 	}
 
 	g := &Group{}
-	if err = g.Add(false); err != RequiredError("Name") {
+	if err = g.Add(); err != RequiredError("Name") {
 		t.Error("expected to report RequiredError")
 	}
 }
