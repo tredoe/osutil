@@ -79,3 +79,52 @@ func TestGShadowError(t *testing.T) {
 		t.Error("expected to report RequiredError")
 	}
 }
+
+func TestGShadow_Add(t *testing.T) {
+	shadow := NewGShadow(GROUP, MEMBERS...)
+	err := shadow.Add(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = shadow.Add(nil); err == nil {
+		t.Fatal("a shadowed group existent can not be added again")
+	} else {
+		if !IsExist(err) {
+			t.Error("shadowed group: expected to report ErrExist")
+		}
+	}
+
+	s, err := LookupGShadow(GROUP)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if s.Name != GROUP {
+		t.Errorf("shadowed group: expected to get name %q", GROUP)
+	}
+}
+
+var (
+	GROUP_KEY1 = []byte("abc")
+	GROUP_KEY2 = []byte("def")
+)
+
+func TestGShadowCrypt(t *testing.T) {
+	gs, err := LookupGShadow(GROUP)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gs.Passwd(GROUP_KEY1)
+	if err = config.crypter.Verify(gs.password, GROUP_KEY1); err != nil {
+		t.Fatalf("expected to get the same hashed password for %q", GROUP_KEY1)
+	}
+
+	if err = ChGPasswd(GROUP, GROUP_KEY2); err != nil {
+		t.Fatalf("expected to change password: %s", err)
+	}
+	gs, _ = LookupGShadow(GROUP)
+	if err = config.crypter.Verify(gs.password, GROUP_KEY2); err != nil {
+		t.Fatalf("ChGPasswd: expected to get the same hashed password for %q", GROUP_KEY2)
+	}
+}

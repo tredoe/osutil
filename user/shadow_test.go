@@ -85,3 +85,52 @@ func TestShadowError(t *testing.T) {
 		t.Error("expected to report RequiredError")
 	}
 }
+
+func TestShadow_Add(t *testing.T) {
+	shadow := NewShadow(USER)
+	err := shadow.Add(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = shadow.Add(nil); err == nil {
+		t.Fatal("a shadowed user existent can not be added again")
+	} else {
+		if !IsExist(err) {
+			t.Error("shadow: expected to report ErrExist")
+		}
+	}
+
+	s, err := LookupShadow(USER)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if s.Name != USER {
+		t.Errorf("shadow: expected to get name %q", USER)
+	}
+}
+
+var (
+	USER_KEY1 = []byte("123")
+	USER_KEY2 = []byte("456")
+)
+
+func TestShadowCrypt(t *testing.T) {
+	s, err := LookupShadow(USER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.Passwd(USER_KEY1)
+	if err = config.crypter.Verify(s.password, USER_KEY1); err != nil {
+		t.Fatalf("expected to get the same hashed password for %q", USER_KEY1)
+	}
+
+	if err = ChPasswd(USER, USER_KEY2); err != nil {
+		t.Fatalf("expected to change password: %s", err)
+	}
+	s, _ = LookupShadow(USER)
+	if err = config.crypter.Verify(s.password, USER_KEY2); err != nil {
+		t.Fatalf("ChPasswd: expected to get the same hashed password for %q", USER_KEY2)
+	}
+}

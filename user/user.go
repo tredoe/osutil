@@ -75,7 +75,6 @@ type User struct {
 	// "/bin/sh".
 	Shell string
 
-	// A system user?
 	addSystemUser bool
 }
 
@@ -86,9 +85,10 @@ func NewUser(name string, gid int) *User {
 
 	return &User{
 		Name:  name,
-		GID:   gid,
 		Dir:   path.Join(config.useradd.HOME, name),
 		Shell: config.useradd.SHELL,
+		UID:   -1,
+		GID:   gid,
 	}
 }
 
@@ -273,7 +273,7 @@ func GetUsernameFromEnv() string {
 // == Editing
 //
 
-// AddUser adds an user.
+// AddUser adds an user to both user and shadow files.
 func AddUser(name string, gid int) (uid int, err error) {
 	s := NewShadow(name)
 	if err = s.Add(nil); err != nil {
@@ -283,7 +283,7 @@ func AddUser(name string, gid int) (uid int, err error) {
 	return NewUser(name, gid).Add()
 }
 
-// AddSystemUser adds a system user.
+// AddSystemUser adds a system user to both user and shadow files.
 func AddSystemUser(name, homeDir string, gid int) (uid int, err error) {
 	s := NewShadow(name)
 	if err = s.Add(nil); err != nil {

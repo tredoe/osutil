@@ -281,7 +281,6 @@ func loadConfig() {
 		if err := config.init(); err != nil {
 			panic(err)
 		}
-		fmt.Println(config)
 	})
 }
 
@@ -293,19 +292,32 @@ func loadConfig() {
 func printStruct(v interface{}) {
 	valueof := reflect.ValueOf(v).Elem()
 	typeof := valueof.Type()
-	str := ""
+	var value interface{}
 
 	for i := 0; i < valueof.NumField(); i++ {
 		fieldT := typeof.Field(i)
 		fieldV := valueof.Field(i)
 
 		switch fieldV.Kind() {
+		case reflect.Bool:
+			value = fieldV.Bool()
 		case reflect.Int:
-			str = strconv.Itoa(int(fieldV.Int()))
+			value = strconv.Itoa(int(fieldV.Int()))
+		case reflect.Slice:
+			//value = fieldV.Slice(0, fieldV.Len())
+
+			/*for j := 0; j < fieldV.NumField(); j++ {
+				fmt.Println(fieldV.Index[j])
+			}*/
+			//fmt.Println(fieldV.Elem())
+
+			fallthrough
+		case reflect.String:
+			value = fieldV.String()
 		default:
-			str = fieldV.String()
+			panic(fieldV.Kind().String() + ": type not added")
 		}
 
-		fmt.Printf("\t%s: %v\n", fieldT.Name, str)
+		fmt.Printf(" %s: %v\n", fieldT.Name, value)
 	}
 }

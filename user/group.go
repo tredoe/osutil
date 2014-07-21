@@ -44,7 +44,6 @@ type Group struct {
 	// A list of the usernames that are members of this group, separated by commas.
 	UserList []string
 
-	// A system group?
 	addSystemGroup bool
 }
 

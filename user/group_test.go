@@ -102,65 +102,64 @@ func TestGetGroups(t *testing.T) {
 }
 
 func TestGroup_Add(t *testing.T) {
-	member0 := "m0"
-	member1 := "m1"
+	group := NewGroup(GROUP, MEMBERS...)
+	_testGroup_Add(t, group, MEMBERS, false)
 
-	var err error
-	GID, err = AddGroup(GROUP)
+	group = NewSystemGroup(SYS_GROUP, MEMBERS...)
+	_testGroup_Add(t, group, MEMBERS, true)
+}
+
+func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool) {
+	prefix := "group"
+	if ofSystem {
+		prefix = "system " + prefix
+	}
+
+	id, err := group.Add()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = AddGroup(GROUP); err == nil {
-		t.Fatal("a group existent can not be added again")
+	if id == -1 {
+		t.Errorf("%s: got UID = -1", prefix)
+	}
+
+	if _, err = group.Add(); err == nil {
+		t.Fatalf("%s: an existent group can not be added again", prefix)
 	} else {
 		if !IsExist(err) {
-			t.Error("expected to report ErrExist")
+			t.Errorf("%s: expected to report ErrExist", prefix)
 		}
 	}
 
-	g, err := LookupGroup(GROUP)
+	if ofSystem {
+		if !group.IsOfSystem() {
+			t.Errorf("%s: IsOfSystem(): expected true")
+		}
+	} else {
+		if group.IsOfSystem() {
+			t.Errorf("%s: IsOfSystem(): expected false")
+		}
+	}
+
+	// Check value stored
+
+	name := ""
+	if ofSystem {
+		name = SYS_GROUP
+	} else {
+		name = GROUP
+	}
+
+	g, err := LookupGroup(name)
 	if err != nil {
-		t.Fatal(err)
-	}
-	sg, err := LookupGShadow(GROUP)
-	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: ", err)
 	}
 
-	if g.Name != GROUP {
-		t.Errorf("group: expected to get name %q", GROUP)
+	if g.Name != name {
+		t.Errorf("%s: expected to get name %q", prefix, name)
 	}
-	if sg.Name != GROUP {
-		t.Errorf("sgroup: expected to get name %q", GROUP)
-	}
-
-	// System group
-
-	if SYS_GID, err = AddSystemGroup(SYS_GROUP, member0, member1); err != nil {
-		t.Fatal(err)
-	}
-
-	g, err = LookupGroup(SYS_GROUP)
-	if err != nil {
-		t.Fatal(err)
-	}
-	sg, err = LookupGShadow(SYS_GROUP)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if g.Name != SYS_GROUP {
-		t.Errorf("system group: expected to get name %q", SYS_GROUP)
-	}
-	if sg.Name != SYS_GROUP {
-		t.Errorf("system sgroup: expected to get name %q", SYS_GROUP)
-	}
-
-	if g.UserList[0] != member0 || g.UserList[1] != member1 {
-		t.Error("system group: expected to get members: %s", g.UserList)
-	}
-	if sg.UserList[0] != member0 || sg.UserList[1] != member1 {
-		t.Error("system group: expected to get members: %s", sg.UserList)
+	if g.UserList[0] != members[0] || g.UserList[1] != members[1] {
+		t.Error("%s: expected to get members: %s", prefix, g.UserList)
 	}
 }
 
@@ -170,7 +169,7 @@ func TestGroup_Change(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = AddUsersToGroup(GROUP, USER, SYS_USER)
+	err = AddUsersToGroup(GROUP, "m0")
 	if err != nil {
 		t.Fatal(err)
 	}

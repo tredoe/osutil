@@ -112,37 +112,67 @@ func TestUserError(t *testing.T) {
 }
 
 func TestUser_Add(t *testing.T) {
-	user := &User{Name: USER, UID: -1, GID: GID, Dir: "/tmp", Shell: "/bin/sh"}
+	user := NewUser(USER, GID)
+	user.Dir = "/tmp"
+	_testUser_Add(t, user, false)
+
+	user = NewSystemUser(SYS_USER, "/tmp", GID)
+	_testUser_Add(t, user, true)
+}
+
+func _testUser_Add(t *testing.T, user *User, ofSystem bool) {
+	prefix := "user"
+	if ofSystem {
+		prefix = "system " + prefix
+	}
 
 	id, err := user.Add()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if id == -1 {
-		t.Error("got UID = -1")
+		t.Errorf("%s: got UID = -1", prefix)
 	}
 
 	if _, err = user.Add(); err == nil {
-		t.Fatal("an user existent can not be added again")
+		t.Fatalf("%s: an existent user can not be added again", prefix)
 	} else {
 		if !IsExist(err) {
-			t.Error("user: expected to report ErrExist")
+			t.Errorf("%s: expected to report ErrExist", prefix)
 		}
 	}
 
-	shadow := &Shadow{Name: USER, changed: 1, Max: 10, Warn: 10}
-	if err = shadow.Add(nil); err != nil {
-		t.Fatal(err)
-	}
-	if err = shadow.Add(nil); err == nil {
-		t.Fatal("a shadowed user existent can not be added again")
+	if ofSystem {
+		if !user.IsOfSystem() {
+			t.Errorf("%s: IsOfSystem(): expected true")
+		}
 	} else {
-		if !IsExist(err) {
-			t.Error("shadow: expected to report ErrExist")
+		if user.IsOfSystem() {
+			t.Errorf("%s: IsOfSystem(): expected false")
 		}
 	}
 
-	u, err := LookupUser(USER)
+	// Check value stored
+
+	name := ""
+	if ofSystem {
+		name = SYS_USER
+	} else {
+		name = USER
+	}
+
+	u, err := LookupUser(name)
+	if err != nil {
+		t.Fatalf("%s: ", err)
+	}
+
+	if u.Name != name {
+		t.Errorf("%s: expected to get name %q", prefix, name)
+	}
+}
+
+func TestUserLock(t *testing.T) {
+	err := LockUser(USER)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,44 +180,20 @@ func TestUser_Add(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if u.Name != USER {
-		t.Errorf("user: expected to get name %q", USER)
-	}
-	if s.Name != USER {
-		t.Errorf("shadow: expected to get name %q", USER)
+	if s.password[0] != _LOCK_CHAR {
+		t.Fatalf("expected to get password starting with '%c', got: '%c'",
+			_LOCK_CHAR, s.password[0])
 	}
 
-	// System user
-
-	user = NewSystemUser(SYS_USER, "/tmp", SYS_GID)
-
-	id, err = user.Add()
+	err = UnlockUser(USER)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if id == -1 {
-		t.Error("got UID = -1")
-	}
-
-	shadow.Name = SYS_USER
-	if err = shadow.Add(nil); err != nil {
-		t.Fatal(err)
-	}
-
-	u, err = LookupUser(SYS_USER)
+	s, err = LookupShadow(USER)
 	if err != nil {
 		t.Fatal(err)
 	}
-	s, err = LookupShadow(SYS_USER)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if u.Name != SYS_USER {
-		t.Errorf("system user: expected to get name %q", SYS_USER)
-	}
-	if s.Name != SYS_USER {
-		t.Errorf("system shadow: expected to get name %q", SYS_USER)
+	if s.password[0] == _LOCK_CHAR {
+		t.Fatalf("no expected to get password starting with '%c'", _LOCK_CHAR)
 	}
 }

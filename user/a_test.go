@@ -17,11 +17,13 @@ import (
 
 const (
 	USER     = "foo"
-	SYS_USER = "bar"
+	SYS_USER = "sys_bar"
 
 	GROUP     = "g-foo"
-	SYS_GROUP = "g-bar"
+	SYS_GROUP = "g-sys_bar"
 )
+
+var MEMBERS = []string{USER, SYS_USER}
 
 // Stores the ids at creating the groups.
 var GID, SYS_GID int
