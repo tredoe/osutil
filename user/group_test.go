@@ -162,7 +162,7 @@ func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool)
 	}
 }
 
-func TestGroup_Change(t *testing.T) {
+func TestGroup_Members(t *testing.T) {
 	group := "g1"
 	member := "m0"
 
@@ -205,5 +205,30 @@ func TestGroup_Change(t *testing.T) {
 		sg_last.UserList[1] != SYS_USER ||
 		sg_last.UserList[2] != member {
 		t.Error("gshadow file: expected to add users into a group")
+	}
+
+	// == Delete
+
+	err = DelUsersInGroup(group, member, USER)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	g_del, err := LookupGroup(group)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sg_del, err := LookupGShadow(group)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(g_del.UserList) == len(g_last.UserList) ||
+		g_del.UserList[0] != SYS_USER {
+		t.Error("group file: expected to remove members of a group")
+	}
+	if len(sg_del.UserList) == len(sg_last.UserList) ||
+		sg_del.UserList[0] != SYS_USER {
+		t.Error("gshadow file: expected to remove members of a group")
 	}
 }

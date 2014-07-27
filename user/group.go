@@ -7,6 +7,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -398,6 +399,77 @@ func _addMembers(userList *[]string, members ...string) error {
 	return nil
 }
 
+// DelUsersInGroup removes the specific members from a group.
+func DelUsersInGroup(name string, members ...string) error {
+	if len(members) == 0 {
+		return ErrNoMembers
+	}
+	for i, v := range members {
+		if v == "" {
+			return EmptyMemberError(fmt.Sprintf("members[%s]", strconv.Itoa(i)))
+		}
+	}
+
+	// Group
+	gr, err := LookupGroup(name)
+	if err != nil {
+		return err
+	}
+	if err = _delMembers(&gr.UserList, members...); err != nil {
+		return err
+	}
+
+	// Shadow group
+	sg, err := LookupGShadow(name)
+	if err != nil {
+		return err
+	}
+	if err = _delMembers(&sg.UserList, members...); err != nil {
+		return err
+	}
+
+	// Editing
+	if err = edit(name, gr); err != nil {
+		return err
+	}
+	if err = edit(name, sg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func _delMembers(userList *[]string, members ...string) error {
+	if len(*userList) == 1 && (*userList)[0] == "" {
+		return ErrNoMembers
+	}
+
+	newUserList := make([]string, 0)
+
+	for _, u := range *userList {
+		found := false
+		for _, m := range members {
+			if u == m {
+				found = true
+				break
+			}
+		}
+		if !found {
+			newUserList = append(newUserList, u)
+		}
+	}
+
+	if len(newUserList) == len(*userList) {
+		return ErrNoMembers
+	}
+
+	*userList = make([]string, len(newUserList))
+	for i, v := range newUserList {
+		(*userList)[i] = v
+	}
+	return nil
+}
+
 // == Utility
 //
 
@@ -411,7 +483,9 @@ func checkGroup(group []string, value string) bool {
 	return false
 }
 
-// * * *
+// == Errors
+
+var ErrNoMembers = errors.New("no members to remove")
 
 // EmptyMemberError reports an empty member.
 type EmptyMemberError string
