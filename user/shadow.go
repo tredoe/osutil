@@ -32,6 +32,30 @@ const (
 	S_ALL
 )
 
+func (f shadowField) String() string {
+	switch f {
+	case S_NAME:
+		return "Name"
+	case S_PASSWD:
+		return "Passwd"
+	case S_CHANGED:
+		return "Changed"
+	case S_MIN:
+		return "Min"
+	case S_MAX:
+		return "Max"
+	case S_WARN:
+		return "Warn"
+	case S_INACTIVE:
+		return "Inactive"
+	case S_EXPIRE:
+		return "Expire"
+	case S_FLAG:
+		return "Flag"
+	}
+	return "ALL"
+}
+
 // changeType represents the options for last password change:
 //
 //   < 0: disable aging
@@ -282,8 +306,8 @@ func parseShadow(row string) (*Shadow, error) {
 
 // lookUp parses the shadow passwd line searching a value into the field.
 // Returns nil if is not found.
-func (*Shadow) lookUp(line string, field, value interface{}) interface{} {
-	_field := field.(shadowField)
+func (*Shadow) lookUp(line string, f field, value interface{}) interface{} {
+	_field := f.(shadowField)
 	allField := strings.Split(line, ":")
 	intField := make(map[int]int)
 
@@ -404,8 +428,10 @@ func (s *Shadow) Add(key []byte) (err error) {
 	loadConfig()
 
 	shadow, err := LookupShadow(s.Name)
-	if err != nil && err != ErrNoFound {
-		return
+	if err != nil {
+		if _, ok := err.(NoFoundError); !ok {
+			return
+		}
 	}
 	if shadow != nil {
 		return ErrExist

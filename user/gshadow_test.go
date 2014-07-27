@@ -64,10 +64,9 @@ func TestGShadowCount(t *testing.T) {
 }
 
 func TestGShadowError(t *testing.T) {
-	var err error
-
-	if _, err = LookupGShadow("!!!???"); err != ErrNoFound {
-		t.Error("expected to report ErrNoFound")
+	_, err := LookupGShadow("!!!???")
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to report NoFoundError")
 	}
 
 	if _, err = LookupInGShadow(GS_MEMBER, "", 0); err != ErrSearch {

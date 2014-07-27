@@ -14,11 +14,13 @@ func TestDelUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err = LookupUser(USER); err != ErrNoFound {
-		t.Error("expected to get error: %s", ErrNoFound)
+	_, err = LookupUser(USER)
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to get error NoFoundError")
 	}
-	if _, err = LookupShadow(USER); err != ErrNoFound {
-		t.Error("expected to get error: %s", ErrNoFound)
+	_, err = LookupShadow(USER)
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to get error NoFoundError")
 	}
 }
 
@@ -28,11 +30,13 @@ func TestDelGroup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err = LookupGroup(GROUP); err != ErrNoFound {
-		t.Error("expected to get error: %s", ErrNoFound)
+	_, err = LookupGroup(GROUP)
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to get error NoFoundError")
 	}
-	if _, err = LookupGShadow(GROUP); err != ErrNoFound {
-		t.Error("expected to get error: %s", ErrNoFound)
+	_, err = LookupGShadow(GROUP)
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to get error NoFoundError")
 	}
 }
 

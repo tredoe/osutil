@@ -90,10 +90,9 @@ func TestUserCount(t *testing.T) {
 }
 
 func TestUserError(t *testing.T) {
-	var err error
-
-	if _, err = LookupUser("!!!???"); err != ErrNoFound {
-		t.Error("expected to report ErrNoFound")
+	_, err := LookupUser("!!!???")
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to report NoFoundError")
 	}
 
 	if _, err = LookupInUser(U_SHELL, "/bin/false", 0); err != ErrSearch {

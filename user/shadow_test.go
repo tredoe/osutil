@@ -70,10 +70,9 @@ func TestShadowCount(t *testing.T) {
 }
 
 func TestShadowError(t *testing.T) {
-	var err error
-
-	if _, err = LookupShadow("!!!???"); err != ErrNoFound {
-		t.Error("expected to report ErrNoFound")
+	_, err := LookupShadow("!!!???")
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to report NoFoundError")
 	}
 
 	if _, err = LookupInShadow(S_MIN, 0, 0); err != ErrSearch {

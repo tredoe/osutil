@@ -30,6 +30,26 @@ const (
 	U_ALL // To get lines without searching into a field.
 )
 
+func (f userField) String() string {
+	switch f {
+	case U_NAME:
+		return "Name"
+	case U_PASSWD:
+		return "Passwd"
+	case U_UID:
+		return "UID"
+	case U_GID:
+		return "GID"
+	case U_GECOS:
+		return "GECOS"
+	case U_DIR:
+		return "Dir"
+	case U_SHELL:
+		return "Shell"
+	}
+	return "ALL"
+}
+
 // An User represents an user account.
 type User struct {
 	// Login name. (Unique)
@@ -154,8 +174,8 @@ func parseUser(row string) (*User, error) {
 
 // lookUp parses the user line searching a value into the field.
 // Returns nil if is not found.
-func (*User) lookUp(line string, field, value interface{}) interface{} {
-	_field := field.(userField)
+func (*User) lookUp(line string, f field, value interface{}) interface{} {
+	_field := f.(userField)
 	allField := strings.Split(line, ":")
 	intField := make(map[int]int)
 
@@ -300,8 +320,10 @@ func (u *User) Add() (uid int, err error) {
 	loadConfig()
 
 	user, err := LookupUser(u.Name)
-	if err != nil && err != ErrNoFound {
-		return
+	if err != nil {
+		if _, ok := err.(NoFoundError); !ok {
+			return
+		}
 	}
 	if user != nil {
 		return 0, ErrExist
@@ -338,7 +360,7 @@ func (u *User) Add() (uid int, err error) {
 		_, err = LookupUID(u.UID)
 		if err == nil {
 			return 0, IdUsedError(u.UID)
-		} else if err != ErrNoFound {
+		} else if _, ok := err.(NoFoundError); !ok {
 			return 0, err
 		}
 	}

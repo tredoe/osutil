@@ -25,6 +25,20 @@ const (
 	GS_ALL
 )
 
+func (f gshadowField) String() string {
+	switch f {
+	case GS_NAME:
+		return "Name"
+	case GS_PASSWD:
+		return "Passwd"
+	case GS_ADMIN:
+		return "Admin"
+	case GS_MEMBER:
+		return "Member"
+	}
+	return "ALL"
+}
+
 // A GShadow represents the format of the shadowed information for a group account.
 type GShadow struct {
 	// Group name. (Unique)
@@ -103,8 +117,8 @@ func parseGShadow(row string) (*GShadow, error) {
 
 // lookUp parses the shadowed group line searching a value into the field.
 // Returns nil if it isn't found.
-func (*GShadow) lookUp(line string, field, value interface{}) interface{} {
-	_field := field.(gshadowField)
+func (*GShadow) lookUp(line string, f field, value interface{}) interface{} {
+	_field := f.(gshadowField)
 	_value := value.(string)
 	allField := strings.Split(line, ":")
 	arrayField := make(map[int][]string)
@@ -183,8 +197,10 @@ func (gs *GShadow) Add(key []byte) (err error) {
 	loadConfig()
 
 	gshadow, err := LookupGShadow(gs.Name)
-	if err != nil && err != ErrNoFound {
-		return
+	if err != nil {
+		if _, ok := err.(NoFoundError); !ok {
+			return
+		}
 	}
 	if gshadow != nil {
 		return ErrExist

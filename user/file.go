@@ -16,6 +16,72 @@ import (
 	"github.com/kless/osutil/file"
 )
 
+// A row represents the structure of a row into a file.
+type row interface {
+	// lookUp is the parser to looking for a value in the field of given line.
+	lookUp(line string, _field field, value interface{}) interface{}
+
+	// filename returns the file name belongs to the file structure.
+	filename() string
+
+	String() string
+}
+
+// A field represents a field into a row.
+type field interface {
+	String() string
+}
+
+// lookUp is a generic parser to looking for a value.
+//
+// The count determines the number of fields to return:
+//   n > 0: at most n fields
+//   n == 0: the result is nil (zero fields)
+//   n < 0: all fields
+func lookUp(_row row, _field field, value interface{}, n int) (interface{}, error) {
+	if n == 0 {
+		return nil, ErrSearch
+	}
+
+	dbf, err := openDBFile(_row.filename(), os.O_RDONLY)
+	if err != nil {
+		return nil, err
+	}
+	defer dbf.close()
+
+	// Lines where a field is matched.
+	entries := make([]interface{}, 0, 0)
+
+	for {
+		line, _, err := dbf.rd.ReadLine()
+		if err == io.EOF {
+			break
+		}
+
+		entry := _row.lookUp(string(line), _field, value)
+		if entry != nil {
+			entries = append(entries, entry)
+		}
+
+		if n < 0 {
+			continue
+		} else if n == len(entries) {
+			break
+		}
+	}
+
+	if len(entries) != 0 {
+		return entries, nil
+	}
+	return nil, NoFoundError{_row.filename(), _field.String(), value}
+}
+
+// == Editing
+//
+
+// DO_BACKUP does a backup before of modify the original files.
+var DO_BACKUP = true
+
 // A dbfile represents the database file.
 type dbfile struct {
 	sync.Mutex
@@ -41,67 +107,6 @@ func (db *dbfile) close() error {
 	return db.file.Close()
 }
 
-// A structurer represents the structure of a row into a file.
-type structurer interface {
-	// lookUp is the parser to looking for a value in the field of given line.
-	lookUp(line string, field, value interface{}) interface{}
-
-	// filename returns the file name belongs to the file structure.
-	filename() string
-
-	String() string
-}
-
-// lookUp is a generic parser to looking for a value.
-//
-// The count determines the number of fields to return:
-//   n > 0: at most n fields
-//   n == 0: the result is nil (zero fields)
-//   n < 0: all fields
-func lookUp(structer structurer, field, value interface{}, n int) (interface{}, error) {
-	if n == 0 {
-		return nil, ErrSearch
-	}
-
-	dbf, err := openDBFile(structer.filename(), os.O_RDONLY)
-	if err != nil {
-		return nil, err
-	}
-	defer dbf.close()
-
-	// Lines where a field is matched.
-	entries := make([]interface{}, 0, 0)
-
-	for {
-		line, _, err := dbf.rd.ReadLine()
-		if err == io.EOF {
-			break
-		}
-
-		entry := structer.lookUp(string(line), field, value)
-		if entry != nil {
-			entries = append(entries, entry)
-		}
-
-		if n < 0 {
-			continue
-		} else if n == len(entries) {
-			break
-		}
-	}
-
-	if len(entries) != 0 {
-		return entries, nil
-	}
-	return nil, ErrNoFound
-}
-
-// == Editing
-//
-
-// DO_BACKUP does a backup before of modify the original files.
-var DO_BACKUP = true
-
 // _FILES_BACKUPED are the files that already have been backuped.
 var _FILES_BACKUPED = make(map[string]struct{}, 4)
 
@@ -118,14 +123,18 @@ func backup(filename string) error {
 	return nil
 }
 
+func edit(name string, r row) error { return _edit(name, r, false) }
+
+func del(name string, r row) error { return _edit(name, r, true) }
+
 // _edit is a generic editor for the given user/group name.
 // If remove is true, it removes the structure of the user/group name.
 //
 // TODO: get better performance if start to store since when the file is edited.
 // So there is to store the size of all lines read until that point to seek from
 // there.
-func _edit(name string, struc structurer, remove bool) (err error) {
-	filename := struc.filename()
+func _edit(name string, _row row, remove bool) (err error) {
+	filename := _row.filename()
 
 	dbf, err := openDBFile(filename, os.O_RDWR)
 	if err != nil {
@@ -139,7 +148,7 @@ func _edit(name string, struc structurer, remove bool) (err error) {
 	}()
 
 	var buf bytes.Buffer
-	_name := []byte(name)
+	name_b := []byte(name)
 	isFound := false
 
 	for {
@@ -148,13 +157,13 @@ func _edit(name string, struc structurer, remove bool) (err error) {
 			break
 		}
 
-		if !isFound && bytes.HasPrefix(line, _name) {
+		if !isFound && bytes.HasPrefix(line, name_b) {
 			isFound = true
 			if remove { // skip user
 				continue
 			}
 
-			line = []byte(struc.String())
+			line = []byte(_row.String())
 		}
 		if _, err = buf.Write(line); err != nil {
 			return err
@@ -179,12 +188,4 @@ func _edit(name string, struc structurer, remove bool) (err error) {
 	}
 
 	return
-}
-
-func edit(name string, struc structurer) error {
-	return _edit(name, struc, false)
-}
-
-func del(name string, struc structurer) error {
-	return _edit(name, struc, true)
 }

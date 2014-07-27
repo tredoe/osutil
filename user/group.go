@@ -26,6 +26,20 @@ const (
 	G_ALL
 )
 
+func (f groupField) String() string {
+	switch f {
+	case G_NAME:
+		return "Name"
+	case G_PASSWD:
+		return "Passwd"
+	case G_GID:
+		return "GID"
+	case G_MEMBER:
+		return "Member"
+	}
+	return "ALL"
+}
+
 // A Group represents the format of a group on the system.
 type Group struct {
 	// Group name. (Unique)
@@ -111,8 +125,8 @@ func parseGroup(row string) (*Group, error) {
 
 // lookUp parses the group line searching a value into the field.
 // Returns nil if it is not found.
-func (*Group) lookUp(line string, field, value interface{}) interface{} {
-	_field := field.(groupField)
+func (*Group) lookUp(line string, f field, value interface{}) interface{} {
+	_field := f.(groupField)
 	allField := strings.Split(line, ":")
 	arrayField := make(map[int][]string)
 	intField := make(map[int]int)
@@ -206,7 +220,7 @@ func Getgroups() []int {
 
 	groups, err := LookupInGroup(G_MEMBER, user, -1)
 	if err != nil {
-		if err != ErrNoFound {
+		if _, ok := err.(NoFoundError); !ok {
 			panic(err)
 		}
 	}
@@ -229,7 +243,7 @@ func GetgroupsName() []string {
 
 	groups, err := LookupInGroup(G_MEMBER, user, -1)
 	if err != nil {
-		if err != ErrNoFound {
+		if _, ok := err.(NoFoundError); !ok {
 			panic(err)
 		}
 	}
@@ -270,8 +284,10 @@ func (g *Group) Add() (gid int, err error) {
 	loadConfig()
 
 	group, err := LookupGroup(g.Name)
-	if err != nil && err != ErrNoFound {
-		return 0, err
+	if err != nil {
+		if _, ok := err.(NoFoundError); !ok {
+			return 0, err
+		}
 	}
 	if group != nil {
 		return 0, ErrExist
@@ -299,7 +315,7 @@ func (g *Group) Add() (gid int, err error) {
 		_, err = LookupGID(g.GID)
 		if err == nil {
 			return 0, IdUsedError(g.GID)
-		} else if err != ErrNoFound {
+		} else if _, ok := err.(NoFoundError); !ok {
 			return 0, err
 		}
 	}
@@ -330,17 +346,42 @@ func AddUsersToGroup(name string, members ...string) error {
 	}
 	for i, v := range members {
 		if v == "" {
-			return EmptyError(fmt.Sprintf("members[%s]", strconv.Itoa(i)))
+			return EmptyMemberError(fmt.Sprintf("members[%s]", strconv.Itoa(i)))
 		}
 	}
 
+	// Group
 	gr, err := LookupGroup(name)
 	if err != nil {
 		return err
 	}
+	if err = _addMembers(&gr.UserList, members...); err != nil {
+		return err
+	}
 
+	// Shadow group
+	sg, err := LookupGShadow(name)
+	if err != nil {
+		return err
+	}
+	if err = _addMembers(&sg.UserList, members...); err != nil {
+		return err
+	}
+
+	// Editing
+	if err = edit(name, gr); err != nil {
+		return err
+	}
+	if err = edit(name, sg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func _addMembers(userList *[]string, members ...string) error {
 	// Check if some member is already in the file.
-	for _, u := range gr.UserList {
+	for _, u := range *userList {
 		for _, m := range members {
 			if u == m {
 				return fmt.Errorf("user %q is already set", u)
@@ -348,13 +389,13 @@ func AddUsersToGroup(name string, members ...string) error {
 		}
 	}
 
-	if len(gr.UserList) == 1 && gr.UserList[0] == "" {
-		gr.UserList = members
+	if len(*userList) == 1 && (*userList)[0] == "" {
+		*userList = members
 	} else {
-		gr.UserList = append(gr.UserList, members...)
+		*userList = append(*userList, members...)
 	}
 
-	return edit(name, gr)
+	return nil
 }
 
 // == Utility
@@ -372,7 +413,7 @@ func checkGroup(group []string, value string) bool {
 
 // * * *
 
-// EmptyError reports an empty field.
-type EmptyError string
+// EmptyMemberError reports an empty member.
+type EmptyMemberError string
 
-func (e EmptyError) Error() string { return "empty field: " + string(e) }
+func (e EmptyMemberError) Error() string { return "empty field: " + string(e) }

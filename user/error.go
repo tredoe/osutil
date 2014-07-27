@@ -13,10 +13,9 @@ import (
 )
 
 var (
-	ErrExist   = errors.New("user or group already exists")
-	ErrNoFound = errors.New("entry not found")
-	ErrRow     = errors.New("format of row not valid")
-	ErrSearch  = errors.New("no search")
+	ErrExist  = errors.New("user or group already exists")
+	ErrRow    = errors.New("format of row not valid")
+	ErrSearch = errors.New("no search")
 )
 
 // IsExist returns whether the error is known to report that an user or group
@@ -34,6 +33,18 @@ type fieldError struct {
 func (e *fieldError) Error() string {
 	return fmt.Sprintf("field %q on %s: could not be turned to int\n%s",
 		e.field, e.file, e.line)
+}
+
+// A NoFoundError reports the absence of a value.
+type NoFoundError struct {
+	file  string
+	field string
+	value interface{}
+}
+
+func (e NoFoundError) Error() string {
+	return fmt.Sprintf("entry \"%v\" not found: file '%s', field %q",
+		e.value, e.file, e.field)
 }
 
 // An HomeError reports an error at adding an account with invalid home directory.

@@ -69,10 +69,9 @@ func TestGroupCount(t *testing.T) {
 }
 
 func TestGroupError(t *testing.T) {
-	var err error
-
-	if _, err = LookupGroup("!!!???"); err != ErrNoFound {
-		t.Error("expected to report ErrNoFound")
+	_, err := LookupGroup("!!!???")
+	if _, ok := err.(NoFoundError); !ok {
+		t.Error("expected to report NoFoundError")
 	}
 
 	if _, err = LookupInGroup(G_MEMBER, "", 0); err != ErrSearch {
@@ -164,24 +163,47 @@ func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool)
 }
 
 func TestGroup_Change(t *testing.T) {
-	g_first, err := LookupGroup(GROUP)
+	group := "g1"
+	member := "m0"
+
+	_, err := AddGroup(group, MEMBERS...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = AddUsersToGroup(GROUP, "m0")
+	g_first, err := LookupGroup(group)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sg_first, err := LookupGShadow(group)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	g_last, err := LookupGroup(GROUP)
+	err = AddUsersToGroup(group, member)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	g_last, err := LookupGroup(group)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sg_last, err := LookupGShadow(group)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if len(g_first.UserList) == len(g_last.UserList) ||
 		g_last.UserList[0] != USER ||
-		g_last.UserList[1] != SYS_USER {
-		t.Error("expected to add users into a group")
+		g_last.UserList[1] != SYS_USER ||
+		g_last.UserList[2] != member {
+		t.Error("group file: expected to add users into a group")
+	}
+	if len(sg_first.UserList) == len(sg_last.UserList) ||
+		sg_last.UserList[0] != USER ||
+		sg_last.UserList[1] != SYS_USER ||
+		sg_last.UserList[2] != member {
+		t.Error("gshadow file: expected to add users into a group")
 	}
 }

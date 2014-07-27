@@ -16,11 +16,12 @@ import (
 )
 
 const (
-	USER     = "foo"
-	SYS_USER = "sys_bar"
+	USER     = "u_foo"
+	USER2    = "u_foo2"
+	SYS_USER = "usys_bar"
 
-	GROUP     = "g-foo"
-	SYS_GROUP = "g-sys_bar"
+	GROUP     = "g_foo"
+	SYS_GROUP = "gsys_bar"
 )
 
 var MEMBERS = []string{USER, SYS_USER}
@@ -36,16 +37,16 @@ func init() {
 		goutil.Fatalln(err)
 	}
 
-	if _USER_FILE, err = file.CopytoTemp(_USER_FILE, ""); err != nil {
+	if _USER_FILE, err = file.CopytoTemp(_USER_FILE, "test-user_"); err != nil {
 		goto _error
 	}
-	if _GROUP_FILE, err = file.CopytoTemp(_GROUP_FILE, ""); err != nil {
+	if _GROUP_FILE, err = file.CopytoTemp(_GROUP_FILE, "test-group_"); err != nil {
 		goto _error
 	}
-	if _SHADOW_FILE, err = file.CopytoTemp(_SHADOW_FILE, ""); err != nil {
+	if _SHADOW_FILE, err = file.CopytoTemp(_SHADOW_FILE, "test-shadow_"); err != nil {
 		goto _error
 	}
-	if _GSHADOW_FILE, err = file.CopytoTemp(_GSHADOW_FILE, ""); err != nil {
+	if _GSHADOW_FILE, err = file.CopytoTemp(_GSHADOW_FILE, "test-gshadow_"); err != nil {
 		goto _error
 	}
 
