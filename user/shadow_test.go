@@ -75,8 +75,8 @@ func TestShadowError(t *testing.T) {
 		t.Error("expected to report NoFoundError")
 	}
 
-	if _, err = LookupInShadow(S_MIN, 0, 0); err != ErrSearch {
-		t.Error("expected to report ErrSearch")
+	if _, err = LookupInShadow(S_MIN, 0, 0); err != errSearch {
+		t.Error("expected to report errSearch")
 	}
 
 	s := &Shadow{}

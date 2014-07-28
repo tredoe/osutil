@@ -9,6 +9,7 @@ package user
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"sync"
@@ -32,6 +33,8 @@ type field interface {
 	String() string
 }
 
+var errSearch = errors.New("no search")
+
 // lookUp is a generic parser to looking for a value.
 //
 // The count determines the number of fields to return:
@@ -40,7 +43,7 @@ type field interface {
 //   n < 0: all fields
 func lookUp(_row row, _field field, value interface{}, n int) (interface{}, error) {
 	if n == 0 {
-		return nil, ErrSearch
+		return nil, errSearch
 	}
 
 	dbf, err := openDBFile(_row.filename(), os.O_RDONLY)

@@ -105,12 +105,12 @@ func (g *Group) String() string {
 func parseGroup(row string) (*Group, error) {
 	fields := strings.Split(row, ":")
 	if len(fields) != 4 {
-		return nil, ErrRow
+		return nil, rowError{_GROUP_FILE, row}
 	}
 
 	gid, err := strconv.Atoi(fields[2])
 	if err != nil {
-		return nil, &fieldError{_GROUP_FILE, row, "GID"}
+		return nil, atoiError{_GROUP_FILE, row, "GID"}
 	}
 
 	return &Group{
@@ -137,7 +137,7 @@ func (*Group) lookUp(line string, f field, value interface{}) interface{} {
 	// Check integers
 	var err error
 	if intField[2], err = strconv.Atoi(allField[2]); err != nil {
-		panic(&fieldError{_GROUP_FILE, line, "GID"})
+		panic(atoiError{_GROUP_FILE, line, "GID"})
 	}
 
 	// Check fields
@@ -291,7 +291,7 @@ func (g *Group) Add() (gid int, err error) {
 		}
 	}
 	if group != nil {
-		return 0, ErrExist
+		return 0, ErrGroupExist
 	}
 
 	if g.Name == "" {
@@ -484,6 +484,7 @@ func checkGroup(group []string, value string) bool {
 }
 
 // == Errors
+//
 
 var ErrNoMembers = errors.New("no members to remove")
 

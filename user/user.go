@@ -146,16 +146,16 @@ func (u *User) String() string {
 func parseUser(row string) (*User, error) {
 	fields := strings.Split(row, ":")
 	if len(fields) != 7 {
-		return nil, ErrRow
+		return nil, rowError{_USER_FILE, row}
 	}
 
 	uid, err := strconv.Atoi(fields[2])
 	if err != nil {
-		return nil, &fieldError{_USER_FILE, row, "UID"}
+		return nil, atoiError{_USER_FILE, row, "UID"}
 	}
 	gid, err := strconv.Atoi(fields[3])
 	if err != nil {
-		return nil, &fieldError{_USER_FILE, row, "GID"}
+		return nil, atoiError{_USER_FILE, row, "GID"}
 	}
 
 	return &User{
@@ -182,10 +182,10 @@ func (*User) lookUp(line string, f field, value interface{}) interface{} {
 	// Check integers
 	var err error
 	if intField[2], err = strconv.Atoi(allField[2]); err != nil {
-		panic(&fieldError{_USER_FILE, line, "UID"})
+		panic(atoiError{_USER_FILE, line, "UID"})
 	}
 	if intField[3], err = strconv.Atoi(allField[3]); err != nil {
-		panic(&fieldError{_USER_FILE, line, "GID"})
+		panic(atoiError{_USER_FILE, line, "GID"})
 	}
 
 	// Check fields
@@ -326,7 +326,7 @@ func (u *User) Add() (uid int, err error) {
 		}
 	}
 	if user != nil {
-		return 0, ErrExist
+		return 0, ErrUserExist
 	}
 
 	if u.Name == "" {
@@ -382,4 +382,14 @@ func DelUser(name string) (err error) {
 		err = del(name, &Shadow{})
 	}
 	return
+}
+
+// == Errors
+//
+
+// A HomeError reports an error at adding an account with invalid home directory.
+type HomeError string
+
+func (e HomeError) Error() string {
+	return "invalid directory for the home directory of an account: " + string(e)
 }

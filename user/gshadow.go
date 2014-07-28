@@ -101,7 +101,7 @@ func (gs *GShadow) String() string {
 func parseGShadow(row string) (*GShadow, error) {
 	fields := strings.Split(row, ":")
 	if len(fields) != 4 {
-		return nil, ErrRow
+		return nil, rowError{_GSHADOW_FILE, row}
 	}
 
 	return &GShadow{
@@ -203,7 +203,7 @@ func (gs *GShadow) Add(key []byte) (err error) {
 		}
 	}
 	if gshadow != nil {
-		return ErrExist
+		return ErrGroupExist
 	}
 
 	if gs.Name == "" {

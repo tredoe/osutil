@@ -248,43 +248,43 @@ func (s *Shadow) String() string {
 func parseShadow(row string) (*Shadow, error) {
 	fields := strings.Split(row, ":")
 	if len(fields) != 9 {
-		return nil, ErrRow
+		return nil, rowError{_SHADOW_FILE, row}
 	}
 
 	var inactive, expire, flag int
 
 	changed, err := parseChange(fields[2])
 	if err != nil {
-		return nil, &fieldError{_SHADOW_FILE, row, "changed"}
+		return nil, atoiError{_SHADOW_FILE, row, "changed"}
 	}
 	min, err := strconv.Atoi(fields[3])
 	if err != nil {
-		return nil, &fieldError{_SHADOW_FILE, row, "Min"}
+		return nil, atoiError{_SHADOW_FILE, row, "Min"}
 	}
 	max, err := strconv.Atoi(fields[4])
 	if err != nil {
-		return nil, &fieldError{_SHADOW_FILE, row, "Max"}
+		return nil, atoiError{_SHADOW_FILE, row, "Max"}
 	}
 	warn, err := strconv.Atoi(fields[5])
 	if err != nil {
-		return nil, &fieldError{_SHADOW_FILE, row, "Warn"}
+		return nil, atoiError{_SHADOW_FILE, row, "Warn"}
 	}
 
 	// Optional fields
 
 	if fields[6] != "" {
 		if inactive, err = strconv.Atoi(fields[6]); err != nil {
-			return nil, &fieldError{_SHADOW_FILE, row, "Inactive"}
+			return nil, atoiError{_SHADOW_FILE, row, "Inactive"}
 		}
 	}
 	if fields[7] != "" {
 		if expire, err = strconv.Atoi(fields[7]); err != nil {
-			return nil, &fieldError{_SHADOW_FILE, row, "expire"}
+			return nil, atoiError{_SHADOW_FILE, row, "expire"}
 		}
 	}
 	if fields[8] != "" {
 		if flag, err = strconv.Atoi(fields[8]); err != nil {
-			return nil, &fieldError{_SHADOW_FILE, row, "flag"}
+			return nil, atoiError{_SHADOW_FILE, row, "flag"}
 		}
 	}
 
@@ -314,31 +314,31 @@ func (*Shadow) lookUp(line string, f field, value interface{}) interface{} {
 	// Check integers
 	changed, err := parseChange(allField[2])
 	if err != nil {
-		panic(&fieldError{_SHADOW_FILE, line, "changed"})
+		panic(atoiError{_SHADOW_FILE, line, "changed"})
 	}
 	if intField[3], err = strconv.Atoi(allField[3]); err != nil {
-		panic(&fieldError{_SHADOW_FILE, line, "Min"})
+		panic(atoiError{_SHADOW_FILE, line, "Min"})
 	}
 	if intField[4], err = strconv.Atoi(allField[4]); err != nil {
-		panic(&fieldError{_SHADOW_FILE, line, "Max"})
+		panic(atoiError{_SHADOW_FILE, line, "Max"})
 	}
 	if intField[5], err = strconv.Atoi(allField[5]); err != nil {
-		panic(&fieldError{_SHADOW_FILE, line, "Warn"})
+		panic(atoiError{_SHADOW_FILE, line, "Warn"})
 	}
 	// These fields could be empty.
 	if allField[6] != "" {
 		if intField[6], err = strconv.Atoi(allField[6]); err != nil {
-			panic(&fieldError{_SHADOW_FILE, line, "Inactive"})
+			panic(atoiError{_SHADOW_FILE, line, "Inactive"})
 		}
 	}
 	if allField[7] != "" {
 		if intField[7], err = strconv.Atoi(allField[7]); err != nil {
-			panic(&fieldError{_SHADOW_FILE, line, "expire"})
+			panic(atoiError{_SHADOW_FILE, line, "expire"})
 		}
 	}
 	if allField[8] != "" {
 		if intField[8], err = strconv.Atoi(allField[8]); err != nil {
-			panic(&fieldError{_SHADOW_FILE, line, "flag"})
+			panic(atoiError{_SHADOW_FILE, line, "flag"})
 		}
 	}
 
@@ -434,7 +434,7 @@ func (s *Shadow) Add(key []byte) (err error) {
 		}
 	}
 	if shadow != nil {
-		return ErrExist
+		return ErrUserExist
 	}
 
 	if s.Name == "" {

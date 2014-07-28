@@ -95,8 +95,8 @@ func TestUserError(t *testing.T) {
 		t.Error("expected to report NoFoundError")
 	}
 
-	if _, err = LookupInUser(U_SHELL, "/bin/false", 0); err != ErrSearch {
-		t.Error("expected to report ErrSearch")
+	if _, err = LookupInUser(U_SHELL, "/bin/false", 0); err != errSearch {
+		t.Error("expected to report errSearch")
 	}
 
 	u := &User{}

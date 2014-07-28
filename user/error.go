@@ -13,27 +13,23 @@ import (
 )
 
 var (
-	ErrExist  = errors.New("user or group already exists")
-	ErrRow    = errors.New("format of row not valid")
-	ErrSearch = errors.New("no search")
+	ErrUserExist  = errors.New("user already exists")
+	ErrGroupExist = errors.New("group already exists")
 )
 
 // IsExist returns whether the error is known to report that an user or group
-// already exists. It is satisfied by ErrExist.
-func IsExist(err error) bool { return err == ErrExist }
-
-// A fieldError records the file, line and field that caused the error at turning
-// a field from string to int.
-type fieldError struct {
-	file  string
-	line  string
-	field string
+// already exists. It is satisfied by ErrUserExist and ErrGroupExist.
+func IsExist(err error) bool {
+	if err == ErrUserExist || err == ErrGroupExist {
+		return true
+	}
+	return false
 }
 
-func (e *fieldError) Error() string {
-	return fmt.Sprintf("field %q on %s: could not be turned to int\n%s",
-		e.field, e.file, e.line)
-}
+// An IdUsedError reports the presence of an identifier already used.
+type IdUsedError int
+
+func (e IdUsedError) Error() string { return "id used: " + strconv.Itoa(int(e)) }
 
 // A NoFoundError reports the absence of a value.
 type NoFoundError struct {
@@ -47,19 +43,30 @@ func (e NoFoundError) Error() string {
 		e.value, e.file, e.field)
 }
 
-// An HomeError reports an error at adding an account with invalid home directory.
-type HomeError string
-
-func (e HomeError) Error() string {
-	return "invalid directory for the home directory of an account: " + string(e)
-}
-
-// An IdUsedError reports the presence of an identifier already used.
-type IdUsedError int
-
-func (e IdUsedError) Error() string { return "id used: " + strconv.Itoa(int(e)) }
-
 // A RequiredError reports the name of a required field.
 type RequiredError string
 
 func (e RequiredError) Error() string { return "required field: " + string(e) }
+
+// An atoiError records the file, row and field that caused the error at turning
+// a field from string to int.
+type atoiError struct {
+	file  string
+	row   string
+	field string
+}
+
+func (e atoiError) Error() string {
+	return fmt.Sprintf("field %q on '%s' could not be turned to int\n%s",
+		e.field, e.file, e.row)
+}
+
+// A rowError records the file and row for a format not valid.
+type rowError struct {
+	file string
+	row  string
+}
+
+func (e rowError) Error() string {
+	return fmt.Sprintf("format of row not valid on '%s'\n%s", e.file, e.row)
+}

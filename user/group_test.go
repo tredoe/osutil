@@ -74,8 +74,8 @@ func TestGroupError(t *testing.T) {
 		t.Error("expected to report NoFoundError")
 	}
 
-	if _, err = LookupInGroup(G_MEMBER, "", 0); err != ErrSearch {
-		t.Error("expected to report ErrSearch")
+	if _, err = LookupInGroup(G_MEMBER, "", 0); err != errSearch {
+		t.Error("expected to report errSearch")
 	}
 
 	g := &Group{}
