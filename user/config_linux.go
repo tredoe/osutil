@@ -8,12 +8,11 @@ package user
 
 import (
 	"fmt"
-	"log"
-	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 
+	"github.com/kless/goutil"
+	"github.com/kless/goutil/reflectutil"
 	"github.com/kless/osutil/config/shconf"
 	"github.com/kless/osutil/user/crypt"
 )
@@ -113,9 +112,8 @@ var config configData
 
 // init sets the configuration data.
 func (c *configData) init() error {
-	log.SetFlags(0)
-
 	_conf_login := &conf_login{}
+	goutil.SetPrefix("\n* ", "")
 
 	cfg, err := shconf.ParseFile(_CONF_LOGIN)
 	if err != nil {
@@ -125,8 +123,8 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			log.Print(_CONF_LOGIN, ":")
-			printStruct(_conf_login)
+			goutil.Println(_CONF_LOGIN)
+			reflectutil.PrintStruct(_conf_login)
 		}
 
 		if _conf_login.PASS_MAX_DAYS == 0 {
@@ -146,8 +144,8 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			log.Print(_CONF_USERADD, ":")
-			printStruct(_conf_useradd)
+			goutil.Println(_CONF_USERADD)
+			reflectutil.PrintStruct(_conf_useradd)
 		}
 
 		if _conf_useradd.HOME == "" {
@@ -172,8 +170,8 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			log.Print(_CONF_ADDUSER, ":")
-			printStruct(_conf_adduser)
+			goutil.Println(_CONF_ADDUSER)
+			reflectutil.PrintStruct(_conf_adduser)
 		}
 
 		if _conf_login.SYS_UID_MIN == 0 || _conf_login.SYS_UID_MAX == 0 ||
@@ -204,8 +202,8 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			log.Print(_CONF_LIBUSER, ":")
-			printStruct(_conf_libuser)
+			goutil.Println(_CONF_LIBUSER)
+			reflectutil.PrintStruct(_conf_libuser)
 		}
 
 		if _conf_libuser.login_defs != _CONF_LOGIN {
@@ -226,8 +224,8 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			log.Print(_CONF_PASSWD, ":")
-			printStruct(_conf_passwd)
+			goutil.Println(_CONF_PASSWD)
+			reflectutil.PrintStruct(_conf_passwd)
 		}
 
 		if _conf_passwd.CRYPT != "" {
@@ -282,42 +280,4 @@ func loadConfig() {
 			panic(err)
 		}
 	})
-}
-
-// * * *
-
-// printStruct prints the field names and values of the given struct.
-// It is used to print the system configuration, when "go test" is used with
-// '-v' flag.
-func printStruct(v interface{}) {
-	valueof := reflect.ValueOf(v).Elem()
-	typeof := valueof.Type()
-	var value interface{}
-
-	for i := 0; i < valueof.NumField(); i++ {
-		fieldT := typeof.Field(i)
-		fieldV := valueof.Field(i)
-
-		switch fieldV.Kind() {
-		case reflect.Bool:
-			value = fieldV.Bool()
-		case reflect.Int:
-			value = strconv.Itoa(int(fieldV.Int()))
-		case reflect.Slice:
-			//value = fieldV.Slice(0, fieldV.Len())
-
-			/*for j := 0; j < fieldV.NumField(); j++ {
-				fmt.Println(fieldV.Index[j])
-			}*/
-			//fmt.Println(fieldV.Elem())
-
-			fallthrough
-		case reflect.String:
-			value = fieldV.String()
-		default:
-			panic(fieldV.Kind().String() + ": type not added")
-		}
-
-		fmt.Printf(" %s: %v\n", fieldT.Name, value)
-	}
 }
