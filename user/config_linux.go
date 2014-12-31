@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kless/goutil"
+	"github.com/kless/goutil/cmdutil"
 	"github.com/kless/goutil/reflectutil"
 	"github.com/kless/osutil/config/shconf"
 	"github.com/kless/osutil/user/crypt"
@@ -113,7 +113,7 @@ var config configData
 // init sets the configuration data.
 func (c *configData) init() error {
 	_conf_login := &conf_login{}
-	goutil.SetPrefix("\n* ", "")
+	cmdutil.SetPrefix("\n* ", "")
 
 	cfg, err := shconf.ParseFile(_CONF_LOGIN)
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			goutil.Println(_CONF_LOGIN)
+			cmdutil.Println(_CONF_LOGIN)
 			reflectutil.PrintStruct(_conf_login)
 		}
 
@@ -144,7 +144,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			goutil.Println(_CONF_USERADD)
+			cmdutil.Println(_CONF_USERADD)
 			reflectutil.PrintStruct(_conf_useradd)
 		}
 
@@ -170,7 +170,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			goutil.Println(_CONF_ADDUSER)
+			cmdutil.Println(_CONF_ADDUSER)
 			reflectutil.PrintStruct(_conf_adduser)
 		}
 
@@ -202,7 +202,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			goutil.Println(_CONF_LIBUSER)
+			cmdutil.Println(_CONF_LIBUSER)
 			reflectutil.PrintStruct(_conf_libuser)
 		}
 
@@ -224,7 +224,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			goutil.Println(_CONF_PASSWD)
+			cmdutil.Println(_CONF_PASSWD)
 			reflectutil.PrintStruct(_conf_passwd)
 		}
 
