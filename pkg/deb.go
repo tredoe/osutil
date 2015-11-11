@@ -8,7 +8,7 @@ package pkg
 
 import "github.com/kless/osutil"
 
-type deb packageSystem
+type deb struct{}
 
 func (p deb) Install(name ...string) error {
 	args := []string{"install", "-y"}

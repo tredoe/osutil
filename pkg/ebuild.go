@@ -8,7 +8,7 @@ package pkg
 
 import "github.com/kless/osutil"
 
-type ebuild packageSystem
+type ebuild struct{}
 
 func (p ebuild) Install(name ...string) error {
 	return osutil.Exec("/usr/bin/emerge", name...)

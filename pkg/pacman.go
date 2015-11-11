@@ -8,7 +8,7 @@ package pkg
 
 import "github.com/kless/osutil"
 
-type pacman packageSystem
+type pacman struct{}
 
 func (p pacman) Install(name ...string) error {
 	args := []string{"-S", "--needed", "--noprogressbar"}

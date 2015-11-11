@@ -13,24 +13,24 @@ func TestPackager(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	pack := New(pkg)
 	cmd := "curl"
 
-	if err = pkg.Update(); err != nil {
+	if err = pack.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if err = pkg.Upgrade(); err != nil {
+	if err = pack.Upgrade(); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = pkg.Install(cmd); err != nil {
+	if err = pack.Install(cmd); err != nil {
 		t.Errorf("\n%s", err)
 	}
-	if err = pkg.Remove(cmd); err != nil {
+	if err = pack.Remove(cmd); err != nil {
 		t.Errorf("\n%s", err)
 	}
 
-	if err = pkg.Clean(); err != nil {
+	if err = pack.Clean(); err != nil {
 		t.Errorf("\n%s", err)
 	}
 }

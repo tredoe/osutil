@@ -8,7 +8,7 @@ package pkg
 
 import "github.com/kless/osutil"
 
-type rpm packageSystem
+type rpm struct{}
 
 func (p rpm) Install(name ...string) error {
 	args := []string{"install"}

@@ -21,7 +21,6 @@ package pkg
 
 import (
 	"errors"
-	"log"
 	"os/exec"
 )
 
@@ -47,7 +46,7 @@ type Packager interface {
 }
 
 // PackageType represents a package management system.
-type PackageType int
+type PackageType int8
 
 const (
 	// Linux
@@ -75,8 +74,8 @@ func (pkg PackageType) String() string {
 }
 
 // New returns the interface to handle the package manager.
-func New(p PackageType) Packager {
-	switch p {
+func New(pkg PackageType) Packager {
+	switch pkg {
 	case Deb:
 		return new(deb)
 	case RPM:
@@ -100,23 +99,14 @@ var execPackagers = [...]string{
 	ZYpp:   "zypper",
 }
 
-// Detect tries to get the package manager used in the system, looking for
+// Detect tries to get the package system used in the system, looking for
 // executables in directory "/usr/bin".
-func Detect() (Packager, error) {
+func Detect() (PackageType, error) {
 	for k, v := range execPackagers {
 		_, err := exec.LookPath("/usr/bin/" + v)
 		if err == nil {
-			return New(PackageType(k)), nil
+			return PackageType(k), nil
 		}
 	}
-	return nil, errors.New("package manager not found in directory '/usr/bin'")
-}
-
-// * * *
-
-type packageSystem byte
-
-func init() {
-	log.SetFlags(0)
-	log.SetPrefix("[pkg] ")
+	return -1, errors.New("package manager not found in directory '/usr/bin'")
 }

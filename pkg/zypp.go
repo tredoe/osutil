@@ -8,7 +8,7 @@ package pkg
 
 import "github.com/kless/osutil"
 
-type zypp packageSystem
+type zypp struct{}
 
 func (p zypp) Install(name ...string) error {
 	args := []string{"install", "--auto-agree-with-licenses"}

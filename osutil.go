@@ -37,12 +37,12 @@ func Sudo() error {
 	return Exec("sudo", "/bin/true")
 }
 
-var errNoRoot = errors.New("MUST have administrator privileges")
+var ErrNoRoot = errors.New("MUST have administrator privileges")
 
 // MustbeRoot returns an error message if the user is not root.
 func MustbeRoot() error {
 	if os.Getuid() != 0 {
-		return errNoRoot
+		return ErrNoRoot
 	}
 	return nil
 }

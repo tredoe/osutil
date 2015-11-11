@@ -1,6 +1,9 @@
 
 ## Linux
 
+#### Deb
+
+
 #### RPM
 
 http://fedoraproject.org/wiki/FAQ#How_do_I_install_new_software_on_Fedora.3F_Is_there_anything_like_APT.3F
@@ -28,9 +31,9 @@ http://www.openss7.org/man2html?zypper%288%29
 
 "--no-confirm"
 
+
 ## Windows
 
 http://www.howtogeek.com/200334/windows-10-includes-a-linux-style-package-manager-named-oneget/?PageSpeed=noscript
 
 http://blogs.msdn.com/b/garretts/archive/2014/04/01/my-little-secret-windows-powershell-oneget.aspx
-
