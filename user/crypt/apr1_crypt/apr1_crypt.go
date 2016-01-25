@@ -32,12 +32,7 @@ const (
 var md5Crypt = md5_crypt.New()
 
 func init() {
-	md5Crypt.SetSalt(common.Salt{
-		MagicPrefix:   []byte(MagicPrefix),
-		SaltLenMin:    SaltLenMin,
-		SaltLenMax:    SaltLenMax,
-		RoundsDefault: RoundsDefault,
-	})
+	md5Crypt.SetSalt(GetSalt())
 }
 
 type crypter struct{ Salt common.Salt }
@@ -56,3 +51,12 @@ func (c *crypter) Verify(hashedKey string, key []byte) error {
 func (c *crypter) Cost(hashedKey string) (int, error) { return RoundsDefault, nil }
 
 func (c *crypter) SetSalt(salt common.Salt) {}
+
+func GetSalt() common.Salt {
+	return common.Salt{
+		MagicPrefix:   []byte(MagicPrefix),
+		SaltLenMin:    SaltLenMin,
+		SaltLenMax:    SaltLenMax,
+		RoundsDefault: RoundsDefault,
+	}
+}
