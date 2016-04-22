@@ -80,7 +80,7 @@ func New(c Crypt) Crypter {
 	if f != nil {
 		return f()
 	}
-	panic("crypt: requested cryp function is unavailable")
+	panic("crypt: requested crypt function is unavailable")
 }
 
 // NewFromHash returns a new Crypter using the prefix in the given hashed key.
