@@ -38,10 +38,12 @@ type Salt struct {
 //   length > SaltLenMax: length = SaltLenMax
 //   length < SaltLenMin: length = SaltLenMin
 func (s *Salt) Generate(length int) []byte {
-	if length > s.SaltLenMax {
+	switch {
+	case length > s.SaltLenMax:
 		length = s.SaltLenMax
-	} else if length < s.SaltLenMin {
+	case length < s.SaltLenMin:
 		length = s.SaltLenMin
+	default:
 	}
 
 	saltLen := (length * 6 / 8)
@@ -51,9 +53,10 @@ func (s *Salt) Generate(length int) []byte {
 	salt := make([]byte, saltLen)
 	rand.Read(salt)
 
-	out := make([]byte, len(s.MagicPrefix)+length)
+	magicPrefixLen := len(s.MagicPrefix)
+	out := make([]byte, magicPrefixLen+length)
 	copy(out, s.MagicPrefix)
-	copy(out[len(s.MagicPrefix):], Base64_24Bit(salt))
+	copy(out[magicPrefixLen:], Base64_24Bit(salt))
 	return out
 }
 
@@ -72,17 +75,21 @@ func (s *Salt) Generate(length int) []byte {
 // If rounds is equal to RoundsDefault, then the "rounds=" part of the salt is
 // removed.
 func (s *Salt) GenerateWRounds(length, rounds int) []byte {
-	if length > s.SaltLenMax {
+	switch {
+	case length > s.SaltLenMax:
 		length = s.SaltLenMax
-	} else if length < s.SaltLenMin {
+	case length < s.SaltLenMin:
 		length = s.SaltLenMin
+	default:
 	}
-	if rounds < 0 {
-		rounds = s.RoundsDefault
-	} else if rounds < s.RoundsMin {
-		rounds = s.RoundsMin
-	} else if rounds > s.RoundsMax {
+	
+	switch {
+	case rounds > s.RoundsMax:
 		rounds = s.RoundsMax
+	case rounds < s.RoundsMin:
+		rounds = s.RoundsMin
+	default:
+		rounds = s.RoundsDefault
 	}
 
 	saltLen := (length * 6 / 8)
@@ -97,9 +104,11 @@ func (s *Salt) GenerateWRounds(length, rounds int) []byte {
 		roundsText = "rounds=" + strconv.Itoa(rounds)
 	}
 
-	out := make([]byte, len(s.MagicPrefix)+len(roundsText)+length)
+	magicPrefixLen := len(s.MagicPrefix)
+	roundsTextLen := len(roundsText)
+	out := make([]byte, magicPrefixLength+roundsTextLen+length)
 	copy(out, s.MagicPrefix)
-	copy(out[len(s.MagicPrefix):], []byte(roundsText))
-	copy(out[len(s.MagicPrefix)+len(roundsText):], Base64_24Bit(salt))
+	copy(out[magicPrefixLength:], []byte(roundsText))
+	copy(out[magicPrefixLength+roundsTextLen:], Base64_24Bit(salt))
 	return out
 }
