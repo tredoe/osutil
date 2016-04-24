@@ -16,20 +16,22 @@ var _Salt = &Salt{
 }
 
 func TestGenerateSalt(t *testing.T) {
+	magicPrefixLen := len(_Salt.MagicPrefix)
+	
 	salt := _Salt.Generate(0)
-	if len(salt) != len(_Salt.MagicPrefix)+1 {
+	if len(salt) != magicPrefixLen+1 {
 		t.Errorf("Expected len 1, got len %d", len(salt))
 	}
 
-	for i := 1; i <= 8; i++ {
+	for i := _Salt.SaltLenMin; i <= _Salt.SaltLenMax; i++ {
 		salt = _Salt.Generate(i)
-		if len(salt) != len(_Salt.MagicPrefix)+i {
+		if len(salt) != magicPrefixLen+i {
 			t.Errorf("Expected len %d, got len %d", i, len(salt))
 		}
 	}
 
 	salt = _Salt.Generate(9)
-	if len(salt) != len(_Salt.MagicPrefix)+8 {
+	if len(salt) != magicPrefixLen+8 {
 		t.Errorf("Expected len 8, got len %d", len(salt))
 	}
 }
