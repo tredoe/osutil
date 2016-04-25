@@ -86,8 +86,8 @@ func (c *crypter) Generate(key, salt []byte) (string, error) {
 		salt = saltToks[2]
 	}
 
-	if len(salt) > 16 {
-		salt = salt[0:16]
+	if len(salt) > SaltLenMax {
+		salt = salt[0:SaltLenMax]
 	}
 
 	// Compute alternate SHA512 sum with input KEY, SALT, and KEY.
