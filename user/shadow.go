@@ -227,9 +227,18 @@ func (s *Shadow) SetExpire(t *time.Time) { s.expire = secToDay(t.Unix()) }
 func (s *Shadow) filename() string { return _SHADOW_FILE }
 
 func (s *Shadow) String() string {
-	var inactive, expire, flag string
+	var min, max, warn, inactive, expire, flag string
 
 	// Optional fields
+	if s.Min != 0 {
+		min = strconv.Itoa(s.Min)
+	}
+	if s.Max != 0 {
+		max = strconv.Itoa(s.Max)
+	}
+	if s.Warn != 0 {
+		warn = strconv.Itoa(s.Warn)
+	}
 	if s.Inactive != 0 {
 		inactive = strconv.Itoa(s.Inactive)
 	}
@@ -240,8 +249,8 @@ func (s *Shadow) String() string {
 		flag = strconv.Itoa(s.flag)
 	}
 
-	return fmt.Sprintf("%s:%s:%s:%d:%d:%d:%s:%s:%s\n",
-		s.Name, s.password, s.changed, s.Min, s.Max, s.Warn, inactive, expire, flag)
+	return fmt.Sprintf("%s:%s:%s:%s:%s:%s:%s:%s:%s\n",
+		s.Name, s.password, s.changed, min, max, warn, inactive, expire, flag)
 }
 
 // parseShadow parses the row of a shadowed password.
@@ -251,27 +260,30 @@ func parseShadow(row string) (*Shadow, error) {
 		return nil, rowError{_SHADOW_FILE, row}
 	}
 
-	var inactive, expire, flag int
+	var min, max, warn, inactive, expire, flag int
 
 	changed, err := parseChange(fields[2])
 	if err != nil {
 		return nil, atoiError{_SHADOW_FILE, row, "changed"}
 	}
-	min, err := strconv.Atoi(fields[3])
-	if err != nil {
-		return nil, atoiError{_SHADOW_FILE, row, "Min"}
-	}
-	max, err := strconv.Atoi(fields[4])
-	if err != nil {
-		return nil, atoiError{_SHADOW_FILE, row, "Max"}
-	}
-	warn, err := strconv.Atoi(fields[5])
-	if err != nil {
-		return nil, atoiError{_SHADOW_FILE, row, "Warn"}
-	}
 
 	// Optional fields
 
+	if fields[3] != "" {
+		if min, err = strconv.Atoi(fields[3]); err != nil {
+			return nil, atoiError{_SHADOW_FILE, row, "Min"}
+		}
+	}
+	if fields[4] != "" {
+		if max, err = strconv.Atoi(fields[4]); err != nil {
+			return nil, atoiError{_SHADOW_FILE, row, "Max"}
+		}
+	}
+	if fields[5] != "" {
+		if warn, err = strconv.Atoi(fields[5]); err != nil {
+			return nil, atoiError{_SHADOW_FILE, row, "Warn"}
+		}
+	}
 	if fields[6] != "" {
 		if inactive, err = strconv.Atoi(fields[6]); err != nil {
 			return nil, atoiError{_SHADOW_FILE, row, "Inactive"}
@@ -316,16 +328,22 @@ func (*Shadow) lookUp(line string, f field, value interface{}) interface{} {
 	if err != nil {
 		panic(atoiError{_SHADOW_FILE, line, "changed"})
 	}
-	if intField[3], err = strconv.Atoi(allField[3]); err != nil {
-		panic(atoiError{_SHADOW_FILE, line, "Min"})
-	}
-	if intField[4], err = strconv.Atoi(allField[4]); err != nil {
-		panic(atoiError{_SHADOW_FILE, line, "Max"})
-	}
-	if intField[5], err = strconv.Atoi(allField[5]); err != nil {
-		panic(atoiError{_SHADOW_FILE, line, "Warn"})
-	}
 	// These fields could be empty.
+	if allField[3] != "" {
+		if intField[3], err = strconv.Atoi(allField[3]); err != nil {
+			panic(atoiError{_SHADOW_FILE, line, "Min"})
+		}
+	}
+	if allField[4] != "" {
+		if intField[4], err = strconv.Atoi(allField[4]); err != nil {
+			panic(atoiError{_SHADOW_FILE, line, "Max"})
+		}
+	}
+	if allField[5] != "" {
+		if intField[5], err = strconv.Atoi(allField[5]); err != nil {
+			panic(atoiError{_SHADOW_FILE, line, "Warn"})
+		}
+	}
 	if allField[6] != "" {
 		if intField[6], err = strconv.Atoi(allField[6]); err != nil {
 			panic(atoiError{_SHADOW_FILE, line, "Inactive"})
