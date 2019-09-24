@@ -7,10 +7,10 @@
 package user
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/tredoe/goutil"
 	"github.com/tredoe/osutil"
 	"github.com/tredoe/osutil/file"
 )
@@ -34,7 +34,7 @@ var GID, SYS_GID int
 func init() {
 	err := osutil.MustbeRoot()
 	if err != nil {
-		goutil.Fatalf("%s", err)
+		log.Fatalf("%s", err)
 	}
 
 	if _USER_FILE, err = file.CopytoTemp(_USER_FILE, "test-user_"); err != nil {
@@ -54,7 +54,7 @@ func init() {
 
 _error:
 	removeTempFiles()
-	goutil.Fatalf("%s", err)
+	log.Fatalf("%s", err)
 }
 
 func removeTempFiles() {
@@ -62,7 +62,7 @@ func removeTempFiles() {
 
 	for _, f := range files {
 		if err := os.Remove(f); err != nil {
-			goutil.Errorf("%s", err)
+			log.Printf("%s", err)
 		}
 	}
 }

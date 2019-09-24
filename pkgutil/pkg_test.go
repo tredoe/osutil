@@ -14,7 +14,7 @@ func TestPackager(t *testing.T) {
 		t.Fatal(err)
 	}
 	pack := New(pkg)
-	cmd := "curl"
+	cmd := "mtr-tiny"
 
 	if err = pack.Update(); err != nil {
 		t.Fatal(err)

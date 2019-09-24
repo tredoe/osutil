@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tredoe/goutil/cmdutil"
 	"github.com/tredoe/goutil/reflectutil"
 	"github.com/tredoe/osutil/config/shconf"
 	"github.com/tredoe/osutil/user/crypt"
@@ -113,7 +112,6 @@ var config configData
 // init sets the configuration data.
 func (c *configData) init() error {
 	_conf_login := &conf_login{}
-	cmdutil.SetPrefix("\n* ", "")
 
 	cfg, err := shconf.ParseFile(_CONF_LOGIN)
 	if err != nil {
@@ -123,7 +121,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			cmdutil.Println(_CONF_LOGIN)
+			fmt.Printf("\n* %s\n", _CONF_LOGIN)
 			reflectutil.PrintStruct(_conf_login)
 		}
 
@@ -144,7 +142,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			cmdutil.Println(_CONF_USERADD)
+			fmt.Printf("\n* %s\n", _CONF_USERADD)
 			reflectutil.PrintStruct(_conf_useradd)
 		}
 
@@ -170,7 +168,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			cmdutil.Println(_CONF_ADDUSER)
+			fmt.Printf("\n* %s\n", _CONF_ADDUSER)
 			reflectutil.PrintStruct(_conf_adduser)
 		}
 
@@ -202,7 +200,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			cmdutil.Println(_CONF_LIBUSER)
+			fmt.Printf("\n* %s\n", _CONF_LIBUSER)
 			reflectutil.PrintStruct(_conf_libuser)
 		}
 
@@ -224,7 +222,7 @@ func (c *configData) init() error {
 			return err
 		}
 		if _DEBUG {
-			cmdutil.Println(_CONF_PASSWD)
+			fmt.Printf("\n* %s\n", _CONF_PASSWD)
 			reflectutil.PrintStruct(_conf_passwd)
 		}
 

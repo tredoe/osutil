@@ -143,11 +143,11 @@ func _testUser_Add(t *testing.T, user *User, ofSystem bool) {
 
 	if ofSystem {
 		if !user.IsOfSystem() {
-			t.Errorf("%s: IsOfSystem(): expected true")
+			t.Errorf("%s: IsOfSystem(): expected true", prefix)
 		}
 	} else {
 		if user.IsOfSystem() {
-			t.Errorf("%s: IsOfSystem(): expected false")
+			t.Errorf("%s: IsOfSystem(): expected false", prefix)
 		}
 	}
 

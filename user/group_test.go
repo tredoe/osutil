@@ -132,11 +132,11 @@ func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool)
 
 	if ofSystem {
 		if !group.IsOfSystem() {
-			t.Errorf("%s: IsOfSystem(): expected true")
+			t.Errorf("%s: IsOfSystem(): expected true", prefix)
 		}
 	} else {
 		if group.IsOfSystem() {
-			t.Errorf("%s: IsOfSystem(): expected false")
+			t.Errorf("%s: IsOfSystem(): expected false", prefix)
 		}
 	}
 
@@ -158,7 +158,7 @@ func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool)
 		t.Errorf("%s: expected to get name %q", prefix, name)
 	}
 	if g.UserList[0] != members[0] || g.UserList[1] != members[1] {
-		t.Error("%s: expected to get members: %s", prefix, g.UserList)
+		t.Errorf("%s: expected to get members: %s", prefix, g.UserList)
 	}
 }
 

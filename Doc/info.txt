@@ -1,0 +1,57 @@
+
++ Library for Unix users and groups in Rust
+	https://github.com/ogham/rust-users
+	https://gitlab.com/core-utils/users_native/blob/master/src/lib.rs
+
+* * *
+
+http://www.manpages.info/freebsd/group.5.html
+http://www.manpages.info/freebsd/passwd.5.html
+
+
+FreeBSD: /etc/login.conf
+
+	passwd_format
+
+/etc/passwd
+/etc/master.passwd
+
+* * *
+
+Command getent:
+
+It retrieves the contents for passwd, shadow, gshadow and a bunch more and
+accesses LDAP and others when present.
+
+If the user doesn't have the required privileges, it returns nothing.
+
+It always uses the "right" information source (say you do use LDAP - it'll
+report the passwd data from LDAP instead of /etc/passwd).
+
+
+this really needs to be done via the system libraries to be complete. It looks
+to cover the basics fairly well (you didn't even forget about gshadow like most
+people), but I wouldn't try to go much further down this path (e.g. don't parse
+nsswitch.conf yourself, and try to resolve usernames elsewhere). 
+
+Take a look at python-libuser to see what's required for a more complete
+interface. https://fedorahosted.org/libuser/
+
+It's a crufty old system, and you really have to go through the standard C
+libraries to make sure your library follows the same rules as everything else
+that resolves user and group information.
+
+* * *
+See command "chage -l [user]"
+
+* * *
+Add tests for functions related to changeType in file shadow.go
+
+* * *
+
+http://nerds-central.blogspot.ca/2007/09/how-to-get-sid-for-group-or-user-by.html
+
+http://msdn.microsoft.com/en-us/library/windows/desktop/aa379159%28v=vs.85%29.aspx
+http://msdn.microsoft.com/en-us/library/windows/desktop/ms721798%28v=vs.85%29.aspx
+http://msdn.microsoft.com/en-us/library/windows/desktop/ms721799%28v=vs.85%29.aspx
+
