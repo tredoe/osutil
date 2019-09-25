@@ -46,7 +46,7 @@ func (s *Salt) Generate(length int) []byte {
 
 	saltLen := (length * 6 / 8)
 	if (length*6)%8 != 0 {
-		saltLen += 1
+		saltLen++
 	}
 	salt := make([]byte, saltLen)
 	rand.Read(salt)
@@ -87,7 +87,7 @@ func (s *Salt) GenerateWRounds(length, rounds int) []byte {
 
 	saltLen := (length * 6 / 8)
 	if (length*6)%8 != 0 {
-		saltLen += 1
+		saltLen++
 	}
 	salt := make([]byte, saltLen)
 	rand.Read(salt)
