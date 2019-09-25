@@ -85,7 +85,7 @@ func RunWithMatch(command string) (output []byte, match bool, err error) {
 	}
 
 	for i, cmd := range commands {
-		cmdEnv := _ENV // evironment variables for each command
+		cmdEnv := env  // evironment variables for each command
 		indexArgs := 1 // position where the arguments start
 		fields := strings.Fields(cmd)
 		lastIdxFields := len(fields) - 1
@@ -99,8 +99,8 @@ func RunWithMatch(command string) (output []byte, match bool, err error) {
 			}
 
 			if strings.ContainsRune(fields[0], '=') {
-				cmdEnv = append([]string{fields[0]}, _ENV...) // Insert the environment variable
-				fields = fields[1:]                           // and it is removed from arguments
+				cmdEnv = append([]string{fields[0]}, env...) // Insert the environment variable
+				fields = fields[1:]                          // and it is removed from arguments
 			} else {
 				break
 			}
@@ -149,7 +149,7 @@ func RunWithMatch(command string) (output []byte, match bool, err error) {
 
 			// Shortcut character "~"
 			if fields[j] == "~" || strings.HasPrefix(fields[j], "~/") {
-				fields[j] = strings.Replace(fields[j], "~", _HOME, 1)
+				fields[j] = strings.Replace(fields[j], "~", home, 1)
 			}
 
 			// File name wildcards

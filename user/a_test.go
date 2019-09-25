@@ -37,16 +37,16 @@ func init() {
 		log.Fatalf("%s", err)
 	}
 
-	if _USER_FILE, err = file.CopytoTemp(_USER_FILE, "test-user_"); err != nil {
+	if fileUser, err = file.CopytoTemp(fileUser, "test-user_"); err != nil {
 		goto _error
 	}
-	if _GROUP_FILE, err = file.CopytoTemp(_GROUP_FILE, "test-group_"); err != nil {
+	if fileGroup, err = file.CopytoTemp(fileGroup, "test-group_"); err != nil {
 		goto _error
 	}
-	if _SHADOW_FILE, err = file.CopytoTemp(_SHADOW_FILE, "test-shadow_"); err != nil {
+	if fileShadow, err = file.CopytoTemp(fileShadow, "test-shadow_"); err != nil {
 		goto _error
 	}
-	if _GSHADOW_FILE, err = file.CopytoTemp(_GSHADOW_FILE, "test-gshadow_"); err != nil {
+	if fileGShadow, err = file.CopytoTemp(fileGShadow, "test-gshadow_"); err != nil {
 		goto _error
 	}
 

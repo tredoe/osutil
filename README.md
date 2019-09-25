@@ -18,7 +18,7 @@ utility packages for the Shell.
 
 `go test ./...`
 
-`sudo env "PATH=$PATH" go test -v ./...`
+`sudo env PATH=$PATH go test -v ./...`
 
 'sudo' command is necessary to copy the files '/etc/{passwd,group,shadow,gshadow}' to the temporary directory, where the tests are run.
 Also, it uses 'sudo' to check the package manager, at installing and removing the package 'mtr-tiny'.

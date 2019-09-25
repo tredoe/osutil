@@ -14,7 +14,7 @@ import (
 )
 
 func TestShadowParser(t *testing.T) {
-	f, err := os.Open(_SHADOW_FILE)
+	f, err := os.Open(fileShadow)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,8 +111,8 @@ func TestShadow_Add(t *testing.T) {
 }
 
 var (
-	USER_KEY1 = []byte("123")
-	USER_KEY2 = []byte("456")
+	userKey1 = []byte("123")
+	userKey2 = []byte("456")
 )
 
 func TestShadowCrypt(t *testing.T) {
@@ -120,16 +120,16 @@ func TestShadowCrypt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.Passwd(USER_KEY1)
-	if err = config.crypter.Verify(s.password, USER_KEY1); err != nil {
-		t.Fatalf("expected to get the same hashed password for %q", USER_KEY1)
+	s.Passwd(userKey1)
+	if err = config.crypter.Verify(s.password, userKey1); err != nil {
+		t.Fatalf("expected to get the same hashed password for %q", userKey1)
 	}
 
-	if err = ChPasswd(USER, USER_KEY2); err != nil {
+	if err = ChPasswd(USER, userKey2); err != nil {
 		t.Fatalf("expected to change password: %s", err)
 	}
 	s, _ = LookupShadow(USER)
-	if err = config.crypter.Verify(s.password, USER_KEY2); err != nil {
-		t.Fatalf("ChPasswd: expected to get the same hashed password for %q", USER_KEY2)
+	if err = config.crypter.Verify(s.password, userKey2); err != nil {
+		t.Fatalf("ChPasswd: expected to get the same hashed password for %q", userKey2)
 	}
 }

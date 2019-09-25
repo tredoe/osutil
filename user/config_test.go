@@ -10,7 +10,7 @@ import "testing"
 
 func TestLoadConfig(t *testing.T) {
 	if testing.Verbose() {
-		_DEBUG = true
+		debug = true
 	}
 	loadConfig()
 }

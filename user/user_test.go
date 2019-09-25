@@ -14,7 +14,7 @@ import (
 )
 
 func TestUserParser(t *testing.T) {
-	f, err := os.Open(_USER_FILE)
+	f, err := os.Open(fileUser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,13 +113,13 @@ func TestUserError(t *testing.T) {
 func TestUser_Add(t *testing.T) {
 	user := NewUser(USER, GID)
 	user.Dir = "/tmp"
-	_testUser_Add(t, user, false)
+	testUserAdd(t, user, false)
 
 	user = NewSystemUser(SYS_USER, "/tmp", GID)
-	_testUser_Add(t, user, true)
+	testUserAdd(t, user, true)
 }
 
-func _testUser_Add(t *testing.T, user *User, ofSystem bool) {
+func testUserAdd(t *testing.T, user *User, ofSystem bool) {
 	prefix := "user"
 	if ofSystem {
 		prefix = "system " + prefix
@@ -179,9 +179,9 @@ func TestUserLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s.password[0] != _LOCK_CHAR {
+	if s.password[0] != lockChar {
 		t.Fatalf("expected to get password starting with '%c', got: '%c'",
-			_LOCK_CHAR, s.password[0])
+			lockChar, s.password[0])
 	}
 
 	err = UnlockUser(USER)
@@ -192,7 +192,7 @@ func TestUserLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s.password[0] == _LOCK_CHAR {
-		t.Fatalf("no expected to get password starting with '%c'", _LOCK_CHAR)
+	if s.password[0] == lockChar {
+		t.Fatalf("no expected to get password starting with '%c'", lockChar)
 	}
 }

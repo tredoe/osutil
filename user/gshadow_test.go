@@ -14,7 +14,7 @@ import (
 )
 
 func TestGShadowParser(t *testing.T) {
-	f, err := os.Open(_GSHADOW_FILE)
+	f, err := os.Open(fileGShadow)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,8 +105,8 @@ func TestGShadow_Add(t *testing.T) {
 }
 
 var (
-	GROUP_KEY1 = []byte("abc")
-	GROUP_KEY2 = []byte("def")
+	groupKey1 = []byte("abc")
+	groupKey2 = []byte("def")
 )
 
 func TestGShadowCrypt(t *testing.T) {
@@ -114,16 +114,16 @@ func TestGShadowCrypt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gs.Passwd(GROUP_KEY1)
-	if err = config.crypter.Verify(gs.password, GROUP_KEY1); err != nil {
-		t.Fatalf("expected to get the same hashed password for %q", GROUP_KEY1)
+	gs.Passwd(groupKey1)
+	if err = config.crypter.Verify(gs.password, groupKey1); err != nil {
+		t.Fatalf("expected to get the same hashed password for %q", groupKey1)
 	}
 
-	if err = ChGPasswd(GROUP, GROUP_KEY2); err != nil {
+	if err = ChGPasswd(GROUP, groupKey2); err != nil {
 		t.Fatalf("expected to change password: %s", err)
 	}
 	gs, _ = LookupGShadow(GROUP)
-	if err = config.crypter.Verify(gs.password, GROUP_KEY2); err != nil {
-		t.Fatalf("ChGPasswd: expected to get the same hashed password for %q", GROUP_KEY2)
+	if err = config.crypter.Verify(gs.password, groupKey2); err != nil {
+		t.Fatalf("ChGPasswd: expected to get the same hashed password for %q", groupKey2)
 	}
 }

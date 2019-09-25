@@ -17,7 +17,7 @@ import (
 func nextUID(isSystem bool) (db *dbfile, uid int, err error) {
 	loadConfig()
 
-	db, err = openDBFile(_USER_FILE, os.O_RDWR)
+	db, err = openDBFile(fileUser, os.O_RDWR)
 	if err != nil {
 		return
 	}
@@ -74,7 +74,7 @@ func nextUID(isSystem bool) (db *dbfile, uid int, err error) {
 func nextGUID(isSystem bool) (db *dbfile, gid int, err error) {
 	loadConfig()
 
-	db, err = openDBFile(_GROUP_FILE, os.O_RDWR)
+	db, err = openDBFile(fileGroup, os.O_RDWR)
 	if err != nil {
 		return
 	}
@@ -156,7 +156,7 @@ func NextGID() (int, error) {
 
 // * * *
 
-// An IdRangeError records an error during the search for a free id to use.
+// IdRangeError records an error during the search for a free id to use.
 type IdRangeError struct {
 	LastId   int
 	IsSystem bool

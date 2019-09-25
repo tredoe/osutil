@@ -14,7 +14,7 @@ import (
 )
 
 func TestGroupParser(t *testing.T) {
-	f, err := os.Open(_GROUP_FILE)
+	f, err := os.Open(fileGroup)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,13 +102,13 @@ func TestGetGroups(t *testing.T) {
 
 func TestGroup_Add(t *testing.T) {
 	group := NewGroup(GROUP, MEMBERS...)
-	_testGroup_Add(t, group, MEMBERS, false)
+	testGroupAdd(t, group, MEMBERS, false)
 
 	group = NewSystemGroup(SYS_GROUP, MEMBERS...)
-	_testGroup_Add(t, group, MEMBERS, true)
+	testGroupAdd(t, group, MEMBERS, true)
 }
 
-func _testGroup_Add(t *testing.T, group *Group, members []string, ofSystem bool) {
+func testGroupAdd(t *testing.T, group *Group, members []string, ofSystem bool) {
 	prefix := "group"
 	if ofSystem {
 		prefix = "system " + prefix

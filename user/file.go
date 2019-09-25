@@ -110,17 +110,17 @@ func (db *dbfile) close() error {
 	return db.file.Close()
 }
 
-// _FILES_BACKUPED are the files that already have been backuped.
-var _FILES_BACKUPED = make(map[string]struct{}, 4)
+// filesBackuped are the files that already have been backuped.
+var filesBackuped = make(map[string]struct{}, 4)
 
 // backup does a backup of a file.
 func backup(filename string) error {
 	if DO_BACKUP {
-		if _, ok := _FILES_BACKUPED[filename]; !ok {
+		if _, ok := filesBackuped[filename]; !ok {
 			if err := file.Backup(filename); err != nil {
 				return err
 			}
-			_FILES_BACKUPED[filename] = struct{}{}
+			filesBackuped[filename] = struct{}{}
 		}
 	}
 	return nil

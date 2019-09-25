@@ -15,11 +15,11 @@ import (
 
 const PATH = "/sbin:/bin:/usr/sbin:/usr/bin"
 
-const _LOG_FILE = "/.shutil.log" // in boot
+const logFilename = "/.shutil.log" // in boot
 
 var (
-	_ENV  []string
-	_HOME string // to expand symbol "~"
+	env   []string
+	home  string // to expand symbol "~"
 	BOOT  bool   // does the script is being run during boot?
 	DEBUG bool
 
@@ -33,10 +33,10 @@ func init() {
 	log.SetPrefix("ERROR: ")
 
 	if BOOT {
-		_ENV = []string{"PATH=" + PATH} // from file boot
+		env = []string{"PATH=" + PATH} // from file boot
 	} else {
-		_ENV = os.Environ()
-		_HOME = os.Getenv("HOME")
+		env = os.Environ()
+		home = os.Getenv("HOME")
 	}
 
 	/*if path := os.Getenv("PATH"); path == "" {
@@ -51,7 +51,7 @@ func StartLogger() {
 	var err error
 
 	if BOOT {
-		if logFile, err = os.OpenFile(_LOG_FILE, os.O_WRONLY|os.O_TRUNC, 0); err != nil {
+		if logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_TRUNC, 0); err != nil {
 			log.Print(err)
 		} else {
 			Log = log.New(logFile, "", log.Lshortfile)
