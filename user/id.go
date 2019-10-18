@@ -29,7 +29,7 @@ func nextUID(isSystem bool) (db *dbfile, uid int, err error) {
 		db.close()
 		return nil, 0, err
 	}
-	if _, err = db.file.Seek(info.Size()/2, os.SEEK_SET); err != nil {
+	if _, err = db.file.Seek(info.Size()/2, io.SeekStart); err != nil {
 		db.close()
 		return nil, 0, err
 	}
@@ -86,7 +86,7 @@ func nextGUID(isSystem bool) (db *dbfile, gid int, err error) {
 		db.close()
 		return nil, 0, err
 	}
-	if _, err = db.file.Seek(info.Size()/2, os.SEEK_SET); err != nil {
+	if _, err = db.file.Seek(info.Size()/2, io.SeekStart); err != nil {
 		db.close()
 		return nil, 0, err
 	}

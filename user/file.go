@@ -178,7 +178,7 @@ func _edit(name string, _row row, remove bool) (err error) {
 			return
 		}
 
-		if _, err = dbf.file.Seek(0, os.SEEK_SET); err != nil {
+		if _, err = dbf.file.Seek(0, io.SeekStart); err != nil {
 			return
 		}
 
