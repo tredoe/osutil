@@ -9,7 +9,9 @@ package distro
 import "testing"
 
 func TestDetect(t *testing.T) {
-	if _, err := Detect(); err != nil {
+	if distro, err := Detect(); err != nil {
 		t.Fatal(err)
+	} else {
+		t.Log(distro)
 	}
 }

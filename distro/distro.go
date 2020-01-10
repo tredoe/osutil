@@ -18,44 +18,37 @@ type Distro int
 
 // Most used Linux distributions.
 const (
-	Arch Distro = iota + 1
+	_ Distro = iota
+	Arch
 	CentOS
 	Debian
 	Fedora
-	Gentoo
-	Mageia
+	Manjaro
 	OpenSUSE
-	PCLinuxOS
-	Slackware
 	Ubuntu
 )
 
 var distroNames = [...]string{
-	Arch:      "Arch", // Manjaro
-	CentOS:    "CentOS",
-	Debian:    "Debian",
-	Fedora:    "Fedora",
-	Gentoo:    "Gentoo",
-	Mageia:    "Mageia", // Mandriva fork
-	OpenSUSE:  "openSUSE",
-	PCLinuxOS: "PCLinuxOS",
-	Slackware: "Slackware", // Slax
-	Ubuntu:    "Ubuntu",
+	Arch:     "Arch",
+	CentOS:   "CentOS",
+	Debian:   "Debian",
+	Fedora:   "Fedora",
+	Manjaro:  "Manjaro",
+	OpenSUSE: "openSUSE",
+	Ubuntu:   "Ubuntu",
 }
 
 func (s Distro) String() string { return distroNames[s] }
 
 var idToDistro = map[string]Distro{
-	"arch":    Arch,
-	"manjaro": Arch,
-
-	"debian":    Debian,
-	"fedora":    Fedora,
-	"gentoo":    Gentoo,
-	"mageia":    Mageia,
-	"opensuse":  OpenSUSE,
-	"slackware": Slackware,
-	"ubuntu":    Ubuntu,
+	"arch":                Arch,
+	"manjaro":             Manjaro, // based on Arch
+	"centos":              CentOS,
+	"debian":              Debian,
+	"fedora":              Fedora,
+	"opensuse-leap":       OpenSUSE,
+	"opensuse-tumbleweed": OpenSUSE,
+	"ubuntu":              Ubuntu,
 }
 
 // Detect returns the Linux distribution.
@@ -76,10 +69,6 @@ func Detect() (Distro, error) {
 			return v, nil
 		}
 
-	} else if _, err = os.Stat("/etc/centos-release"); !os.IsNotExist(err) {
-		return CentOS, nil
-	} else if _, err = os.Stat("/etc/pclinuxos-release"); !os.IsNotExist(err) {
-		return PCLinuxOS, nil
 	}
 
 	panic("Linux distribution unsopported")
