@@ -18,7 +18,7 @@ type Distro int
 
 // Most used Linux distributions.
 const (
-	_ Distro = iota
+	DistroUnknown Distro = iota
 	Arch
 	CentOS
 	Debian
@@ -29,13 +29,14 @@ const (
 )
 
 var distroNames = [...]string{
-	Arch:     "Arch",
-	CentOS:   "CentOS",
-	Debian:   "Debian",
-	Fedora:   "Fedora",
-	Manjaro:  "Manjaro",
-	OpenSUSE: "openSUSE",
-	Ubuntu:   "Ubuntu",
+	DistroUnknown: "unknown distribution",
+	Arch:          "Arch",
+	CentOS:        "CentOS",
+	Debian:        "Debian",
+	Fedora:        "Fedora",
+	Manjaro:       "Manjaro",
+	OpenSUSE:      "openSUSE",
+	Ubuntu:        "Ubuntu",
 }
 
 func (s Distro) String() string { return distroNames[s] }
@@ -61,15 +62,14 @@ func Detect() (Distro, error) {
 		if err != nil {
 			return 0, err
 		}
-
 		if id, err = cfg.Get("ID"); err != nil {
 			return 0, err
 		}
+
 		if v, found := idToDistro[id]; found {
 			return v, nil
 		}
-
 	}
 
-	panic("Linux distribution unsopported")
+	return DistroUnknown, nil
 }
