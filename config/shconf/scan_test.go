@@ -24,6 +24,9 @@ var scanTests = []struct {
 	{" \n FOO=bar ", "FOO", "bar"}, // 5
 	{`FOO="bar"`, "FOO", "bar"},
 	{"FOO='bar'", "FOO", "bar"},
+
+	{"foo_a='bar'", "foo_a", "bar"},
+	{"foo.b = 'bar'", "foo.b", "bar"},
 }
 
 func TestScanKeys(t *testing.T) {
@@ -42,9 +45,9 @@ func TestScanKeys(t *testing.T) {
 			t.Errorf("#%d: %v", n, err)
 		}
 
-		if s.separator != nil && len(_DEF_SEPARATOR) == len(s.separator) {
-			if _DEF_SEPARATOR[0] != s.separator[0] {
-				t.Errorf("#%d: separator: expected %q, got %q\n", n, _DEF_SEPARATOR, s.separator)
+		if s.separator != nil && len(separator) == len(s.separator) {
+			if separator[0] != s.separator[0] {
+				t.Errorf("#%d: separator: expected %q, got %q\n", n, separator, s.separator)
 			}
 		}
 	}

@@ -99,8 +99,8 @@ func TestParseFile(t *testing.T) {
 		t.Error("expected to get ErrStructPtr")
 	}
 
-	if _DEF_SEPARATOR[0] != cfg.separator[0] {
-		t.Errorf("separator: expected %q, got %q", _DEF_SEPARATOR, cfg.separator)
+	if separator[0] != cfg.separator[0] {
+		t.Errorf("separator: expected %q, got %q", separator, cfg.separator)
 	}
 
 	// == Editing
