@@ -17,16 +17,17 @@ import (
 	"os"
 	"path"
 
+	"github.com/tredoe/fileutil"
+
 	"github.com/tredoe/osutil/config/shconf"
-	"github.com/tredoe/osutil/file"
 	"github.com/tredoe/osutil/user"
 )
 
-var _IS_ROOT bool
+var isRoot bool
 
 func init() {
 	if os.Getuid() == 0 {
-		_IS_ROOT = true
+		isRoot = true
 	}
 }
 
@@ -63,21 +64,21 @@ var (
 type shellType int
 
 const (
-	_SHELL_SH shellType = 1 + iota
-	_SHELL_CSH
+	shellSh shellType = 1 + iota
+	shellCsh
 )
 
 // == Settings for each Shell family
 //
 
 var systemFile = []string{
-	_SHELL_SH: "/etc/environment",
-	//_SHELL_CSH: "",
+	shellSh: "/etc/environment",
+	//shellCsh: "",
 }
 
 var userFile = []string{
-	_SHELL_SH: ".pam_environment",
-	//_SHELL_CSH: "",
+	shellSh: ".pam_environment",
+	//shellCsh: "",
 }
 
 // To set environment variables that affect your whole session, KDE will execute
@@ -95,20 +96,20 @@ type settings struct {
 }
 
 // Settings files of the caller.
-var _SETTINGS settings
+var _settings settings
 
 // Sets the settings files of the caller.
 func init() {
 	var err error
 
-	_SETTINGS, err = getSettingsForUid(os.Getuid())
+	_settings, err = settingsForUID(os.Getuid())
 	if err != nil {
 		panic(err)
 	}
 }
 
-// getSettingsForUid returns the settings files of the given user id.
-func getSettingsForUid(id int) (settings, error) {
+// settingsForUID returns the settings files of the given user id.
+func settingsForUID(id int) (settings, error) {
 	u, err := user.LookupUID(id)
 	if err != nil {
 		return settings{}, err
@@ -123,8 +124,8 @@ func getSettingsForUid(id int) (settings, error) {
 	shell := path.Base(u.Shell)
 
 	_settings := settings{
-		global: systemFile[_SHELL_SH],
-		user:   path.Join(u.Dir, userFile[_SHELL_SH]),
+		global: systemFile[shellSh],
+		user:   path.Join(u.Dir, userFile[shellSh]),
 		kde:    path.Join(u.Dir, kdeFile),
 	}
 	info, err := os.Stat(_settings.kde)
@@ -164,7 +165,7 @@ func _Set(filename, key, value string) error {
 		}
 	}
 
-	return file.AppendString(filename, key+string(conf.Separator())+value)
+	return fileutil.AppendString(filename, fileutil.ModBackup, key+string(conf.Separator())+value)
 }
 
 // _MSet sets multiple values named by the keys in the given filename.
@@ -194,7 +195,7 @@ func _MSet(filename string, keys, values []string) error {
 		buf.WriteByte('\n')
 	}
 
-	return file.Append(filename, buf.Bytes())
+	return fileutil.Append(filename, fileutil.ModBackup, buf.Bytes())
 }
 
 // == Set session-wide variables
@@ -203,13 +204,13 @@ func _MSet(filename string, keys, values []string) error {
 // affects the current user.
 // It returns an error, if any.
 func Set(key, value string) error {
-	err := _Set(_SETTINGS.user, key, value)
+	err := _Set(_settings.user, key, value)
 	if err != nil {
 		return err
 	}
 
-	if _SETTINGS.useKDE {
-		return _Set(_SETTINGS.kde, key, value)
+	if _settings.useKDE {
+		return _Set(_settings.kde, key, value)
 	}
 	return nil
 }
@@ -218,13 +219,13 @@ func Set(key, value string) error {
 // that affects the current user.
 // It returns an error, if any.
 func MSet(keys, values []string) error {
-	err := _MSet(_SETTINGS.user, keys, values)
+	err := _MSet(_settings.user, keys, values)
 	if err != nil {
 		return err
 	}
 
-	if _SETTINGS.useKDE {
-		return _MSet(_SETTINGS.kde, keys, values)
+	if _settings.useKDE {
+		return _MSet(_settings.kde, keys, values)
 	}
 	return nil
 }
@@ -233,7 +234,7 @@ func MSet(keys, values []string) error {
 // affects a particular user.
 // It returns an error, if any.
 func SetForUid(id int, key, value string) error {
-	_settings, err := getSettingsForUid(id)
+	_settings, err := settingsForUID(id)
 	if err != nil {
 		return err
 	}
@@ -251,7 +252,7 @@ func SetForUid(id int, key, value string) error {
 // keys that affects a particular user.
 // It returns an error, if any.
 func MSetForUid(id int, keys, values []string) error {
-	_settings, err := getSettingsForUid(id)
+	_settings, err := settingsForUID(id)
 	if err != nil {
 		return err
 	}
@@ -271,31 +272,31 @@ func MSetForUid(id int, keys, values []string) error {
 // affects the system as a whole. You must be Root.
 // It returns an error, if any.
 func Setsys(key, value string) error {
-	if !_IS_ROOT {
+	if !isRoot {
 		return ErrNoRoot
 	}
-	return _Set(_SETTINGS.global, key, value)
+	return _Set(_settings.global, key, value)
 }
 
 // MSetsys sets multiple values of the environment variables named by the keys
 // that affects the system as a whole. You must be Root.
 // It returns an error, if any.
 func MSetsys(keys, values []string) error {
-	if !_IS_ROOT {
+	if !isRoot {
 		return ErrNoRoot
 	}
-	return _MSet(_SETTINGS.global, keys, values)
+	return _MSet(_settings.global, keys, values)
 }
 
 // SetsysForUid sets the value of the environment variable named by the key that
 // affects the system as a whole. You must be Root.
 // It returns an error, if any.
 func SetsysForUid(id int, key, value string) error {
-	if !_IS_ROOT {
+	if !isRoot {
 		return ErrNoRoot
 	}
 
-	_settings, err := getSettingsForUid(id)
+	_settings, err := settingsForUID(id)
 	if err != nil {
 		return err
 	}
@@ -306,11 +307,11 @@ func SetsysForUid(id int, key, value string) error {
 // keys that affects the system as a whole. You must be Root.
 // It returns an error, if any.
 func MSetsysForUid(id int, keys, values []string) error {
-	if !_IS_ROOT {
+	if !isRoot {
 		return ErrNoRoot
 	}
 
-	_settings, err := getSettingsForUid(id)
+	_settings, err := settingsForUID(id)
 	if err != nil {
 		return err
 	}

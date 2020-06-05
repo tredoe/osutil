@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/tredoe/fileutil"
 	"github.com/tredoe/osutil"
-	"github.com/tredoe/osutil/file"
 )
 
 const (
@@ -37,16 +37,16 @@ func init() {
 		log.Fatalf("%s", err)
 	}
 
-	if fileUser, err = file.CopytoTemp(fileUser, "test-user_"); err != nil {
+	if fileUser, err = fileutil.CopytoTemp(fileUser, "test-user_"); err != nil {
 		goto _error
 	}
-	if fileGroup, err = file.CopytoTemp(fileGroup, "test-group_"); err != nil {
+	if fileGroup, err = fileutil.CopytoTemp(fileGroup, "test-group_"); err != nil {
 		goto _error
 	}
-	if fileShadow, err = file.CopytoTemp(fileShadow, "test-shadow_"); err != nil {
+	if fileShadow, err = fileutil.CopytoTemp(fileShadow, "test-shadow_"); err != nil {
 		goto _error
 	}
-	if fileGShadow, err = file.CopytoTemp(fileGShadow, "test-gshadow_"); err != nil {
+	if fileGShadow, err = fileutil.CopytoTemp(fileGShadow, "test-gshadow_"); err != nil {
 		goto _error
 	}
 
@@ -58,7 +58,7 @@ _error:
 }
 
 func removeTempFiles() {
-	files, _ := filepath.Glob(filepath.Join(os.TempDir(), file.PREFIX_TEMP+"*"))
+	files, _ := filepath.Glob(filepath.Join(os.TempDir(), fileutil.PREFIX_TEMP+"*"))
 
 	for _, f := range files {
 		if err := os.Remove(f); err != nil {

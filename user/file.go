@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/tredoe/osutil/file"
+	"github.com/tredoe/fileutil"
 )
 
 // A row represents the structure of a row into a file.
@@ -117,7 +117,7 @@ var filesBackuped = make(map[string]struct{}, 4)
 func backup(filename string) error {
 	if DO_BACKUP {
 		if _, ok := filesBackuped[filename]; !ok {
-			if err := file.Backup(filename); err != nil {
+			if err := fileutil.Backup(filename); err != nil {
 				return err
 			}
 			filesBackuped[filename] = struct{}{}

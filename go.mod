@@ -1,5 +1,8 @@
 module github.com/tredoe/osutil
 
-go 1.13
+go 1.14
 
-require github.com/tredoe/goutil v0.0.0-20161130132832-0a73aea41b0b
+require (
+	github.com/tredoe/fileutil v1.0.0
+	github.com/tredoe/goutil v0.0.0-20200111155331-68cefb6d3cdc
+)
