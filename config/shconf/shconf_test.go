@@ -9,7 +9,6 @@ package shconf
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -36,7 +35,7 @@ type conf struct {
 
 func TestParseFile(t *testing.T) {
 	// == Create temporary file
-	file, _ := ioutil.TempFile("", "test")
+	file, _ := os.CreateTemp("", "test")
 
 	buf := bufio.NewWriter(file)
 	buf.WriteString("# main comment\n\n")

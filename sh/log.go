@@ -7,7 +7,7 @@
 package sh
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"log/syslog"
 	"os"
@@ -24,7 +24,7 @@ var (
 	DEBUG bool
 
 	logFile *os.File
-	Log     = log.New(ioutil.Discard, "", 0)
+	Log     = log.New(io.Discard, "", 0)
 )
 
 // Sets environment variables and a null logger.
