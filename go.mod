@@ -2,8 +2,6 @@ module github.com/tredoe/osutil
 
 go 1.16
 
-// Breaking changes
-// curl proxy.golang.org/github.com/tredoe/osutil/@v/list |sort -V
 retract (
 	v1.1.0
 	v1.1.1
@@ -23,5 +21,4 @@ retract (
 	v1.3.4
 	v1.3.5
 	v1.3.6
-	v2.0.0
-)
+) // older releases are no longer installable, as they depended on another module that no longer exists
