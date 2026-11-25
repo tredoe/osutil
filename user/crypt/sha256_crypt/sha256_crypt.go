@@ -163,7 +163,8 @@ func (c *crypter) Generate(key, salt []byte) (string, error) {
 			C.Write(Pseq)
 		}
 
-		Csum = C.Sum(nil)
+		// Reuse the previous digest buffer after Write has consumed it.
+		Csum = C.Sum(Csum[:0])
 	}
 
 	out := make([]byte, 0, 80)
